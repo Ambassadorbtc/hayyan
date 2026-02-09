@@ -1,24 +1,24 @@
 {
   "expo": {
-    "name": "Enerzo",
-    "slug": "enerzo",
+    "name": "Hayyan",
+    "slug": "hayyan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "enerzo",
+    "scheme": "hayyan",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.enerzo.app"
+      "bundleIdentifier": "com.hayyan.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#00A676"
+        "backgroundColor": "#7B5CF6"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.enerzo.app"
+      "package": "com.hayyan.app"
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +33,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#00A676"
+          "backgroundColor": "#7B5CF6"
         }
       ]
     ],
