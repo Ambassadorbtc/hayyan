@@ -299,12 +299,34 @@ export default function WebsiteHomePage() {
               <View style={styles.phoneMockup}>
                 <View style={styles.phoneNotch} />
                 <View style={styles.phoneScreenImage}>
-                  {/* Actual App Screenshot */}
-                  <Image 
-                    source={require('../../assets/images/compare-deals.png')}
-                    style={styles.appScreenshot}
-                    resizeMode="cover"
-                  />
+                  {/* App Compare Screen Mockup */}
+                  <View style={styles.mockupScreen}>
+                    <View style={styles.mockupHeader}>
+                      <Text style={styles.mockupTitle}>Compare Deals</Text>
+                    </View>
+                    <View style={styles.mockupCard}>
+                      <View style={styles.mockupCardHeader}>
+                        <Text style={styles.mockupSupplier}>🐙 Octopus Energy</Text>
+                        <View style={styles.mockupBadge}><Text style={styles.mockupBadgeText}>Save 18%</Text></View>
+                      </View>
+                      <Text style={styles.mockupSavings}>£432/year savings</Text>
+                      <View style={styles.mockupButton}><Text style={styles.mockupButtonText}>View Deal</Text></View>
+                    </View>
+                    <View style={styles.mockupCard}>
+                      <View style={styles.mockupCardHeader}>
+                        <Text style={styles.mockupSupplier}>🔥 British Gas</Text>
+                        <View style={styles.mockupBadge}><Text style={styles.mockupBadgeText}>Save 15%</Text></View>
+                      </View>
+                      <Text style={styles.mockupSavings}>£360/year savings</Text>
+                    </View>
+                    <View style={styles.mockupCard}>
+                      <View style={styles.mockupCardHeader}>
+                        <Text style={styles.mockupSupplier}>⚡ EDF Energy</Text>
+                        <View style={styles.mockupBadge}><Text style={styles.mockupBadgeText}>Save 12%</Text></View>
+                      </View>
+                      <Text style={styles.mockupSavings}>£288/year savings</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
               
