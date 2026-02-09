@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,10 +8,10 @@ import Animated, {
   FadeIn,
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
+  withTiming,
   withRepeat,
   withSequence,
-  withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -42,6 +42,38 @@ export default function SignupScreen() {
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleBack = () => {
     router.back();
@@ -136,7 +168,7 @@ export default function SignupScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -152,13 +184,17 @@ export default function SignupScreen() {
 
         {/* Title */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
-          <Text style={styles.headline}>Create your free Enerzo account</Text>
+          <Text style={styles.headline}>Create your free Hayyan account</Text>
           <Text style={styles.subheadline}>Get instant access to energy savings</Text>
         </Animated.View>
 
-        {/* Enezi Section */}
-        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
-          <Enezi size={180} expression="celebrating" animated />
+        {/* Character Section */}
+        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
+          {showCharacter && (
+            <Animated.View style={characterStyle}>
+              <Enezi size={180} expression="celebrating" animated={false} />
+            </Animated.View>
+          )}
         </Animated.View>
 
         {/* Auth Buttons */}
@@ -263,7 +299,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.xl,
   },
@@ -326,7 +362,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   termsLink: {
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   progressContainer: {
@@ -343,7 +379,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });
