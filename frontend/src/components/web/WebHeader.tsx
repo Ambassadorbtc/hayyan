@@ -13,6 +13,7 @@ export const WebHeader: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
+    { label: 'Home', href: '/website' },
     { label: 'How It Works', href: '/website/how-it-works' },
     { label: 'About Us', href: '/website/about' },
     { label: 'Guides', href: '/website/guides' },
