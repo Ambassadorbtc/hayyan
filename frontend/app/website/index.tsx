@@ -675,6 +675,16 @@ const styles = StyleSheet.create({
     padding: 16,
     overflow: 'hidden',
   },
+  phoneScreenImage: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 35,
+    overflow: 'hidden',
+  },
+  appScreenshot: {
+    width: '100%',
+    height: '100%',
+  },
   screenHeader: {
     marginBottom: 16,
   },
