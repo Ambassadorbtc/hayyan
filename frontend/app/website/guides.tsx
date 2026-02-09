@@ -153,7 +153,10 @@ export default function GuidesPage() {
                 key={guide.title}
                 entering={FadeInUp.delay(200 + index * 100).duration(600)}
               >
-                <TouchableOpacity style={styles.guideCard}>
+                <TouchableOpacity 
+                  style={styles.guideCard}
+                  onPress={() => router.push(guide.href as any)}
+                >
                   <View style={styles.guideIcon}>
                     <Ionicons name={guide.icon as any} size={24} color={COLORS.primary} />
                   </View>
