@@ -382,18 +382,18 @@ const styles = StyleSheet.create({
   },
   savingsAmount: {
     ...TYPOGRAPHY.body,
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
     fontWeight: '700',
     marginTop: 2,
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF9E6',
+    backgroundColor: '#F5F0FF',
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginTop: SPACING.xl,
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.highlightYellow,
+    borderLeftColor: COLORS.primary,
     alignItems: 'center',
   },
   tipContent: {
