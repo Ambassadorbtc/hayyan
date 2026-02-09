@@ -20,7 +20,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI(title="Enerzo API", description="Backend API for Enerzo energy savings app")
+app = FastAPI(title="Hayyan API", description="Backend API for Hayyan energy savings app")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -104,7 +104,7 @@ class StatusCheckCreate(BaseModel):
 # Health check
 @api_router.get("/")
 async def root():
-    return {"message": "Enerzo API is running!", "version": "1.0.0"}
+    return {"message": "Hayyan API is running!", "version": "1.0.0"}
 
 
 @api_router.get("/health")
