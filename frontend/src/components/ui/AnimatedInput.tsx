@@ -46,7 +46,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
   const handleFocus = (e: any) => {
     setIsFocused(true);
     focusProgress.value = withTiming(1, { duration: 200 });
-    scale.value = withSpring(1.02, { damping: 15, stiffness: 400 });
+    scale.value = withSpring(1.01, { damping: 15, stiffness: 400 });
     labelPosition.value = withTiming(1, { duration: 200 });
     onFocus?.(e);
   };
@@ -67,7 +67,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
       : interpolateColor(
           focusProgress.value,
           [0, 1],
-          [COLORS.cardBorder, COLORS.primaryGreen]
+          [COLORS.cardBorder, COLORS.primary]
         );
 
     return {
@@ -78,34 +78,34 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
 
   const labelStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: labelPosition.value * -24 },
-      { scale: 1 - labelPosition.value * 0.15 },
+      { translateY: labelPosition.value * -12 },
+      { scale: 1 - labelPosition.value * 0.1 },
     ],
-    color: interpolateColor(
-      focusProgress.value,
-      [0, 1],
-      [COLORS.textSecondary, COLORS.primaryGreen]
-    ),
+    opacity: labelPosition.value === 0 ? 1 : 0.8,
   }));
 
   return (
     <View style={styles.wrapper}>
-      <AnimatedView style={[styles.container, SHADOWS.small, containerStyle]}>
+      <AnimatedView style={[styles.container, containerStyle]}>
         {icon && (
           <Ionicons
             name={icon}
-            size={20}
-            color={isFocused ? COLORS.primaryGreen : COLORS.textSecondary}
+            size={22}
+            color={isFocused ? COLORS.primary : COLORS.textSecondary}
             style={styles.icon}
           />
         )}
         <View style={styles.inputWrapper}>
-          <Animated.Text style={[styles.label, labelStyle]}>{label}</Animated.Text>
+          {/* Floating label - only show when not focused and no value */}
+          {!value && !isFocused && (
+            <Text style={styles.placeholderLabel}>{label}</Text>
+          )}
           <TextInput
             style={styles.input}
             value={value}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            placeholder={isFocused ? label : ''}
             placeholderTextColor={COLORS.textMuted}
             {...props}
           />
@@ -129,10 +129,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.cardBackground,
     borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    borderColor: COLORS.cardBorder,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    minHeight: 56,
+    minHeight: 60,
   },
   icon: {
     marginRight: SPACING.sm,
@@ -140,20 +140,19 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flex: 1,
     justifyContent: 'center',
+    height: 44,
   },
-  label: {
+  placeholderLabel: {
     position: 'absolute',
-    left: 0,
-    top: 4,
     ...TYPOGRAPHY.body,
-    backgroundColor: COLORS.cardBackground,
-    paddingHorizontal: 4,
+    color: COLORS.textMuted,
   },
   input: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
+    flex: 1,
+    height: 44,
     paddingVertical: 0,
-    marginTop: 8,
   },
   helperText: {
     ...TYPOGRAPHY.caption,
