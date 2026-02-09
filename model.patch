@@ -1,22 +1,40 @@
 diff --git a/frontend/app/website/index.tsx b/frontend/app/website/index.tsx
-index 4e79bda..c6ee2db 100644
+index c6ee2db..9fd2904 100644
 --- a/frontend/app/website/index.tsx
 +++ b/frontend/app/website/index.tsx
 @@ -417,7 +417,7 @@ export default function WebsiteHomePage() {
  
              {/* App Store Buttons */}
              <Animated.View 
--              entering={BounceInUp.delay(700).duration(600)}
-+              entering={BounceInDown.delay(700).duration(600)}
+-              entering={BounceInDown.delay(700).duration(600)}
++              entering={ZoomIn.delay(700).duration(600)}
                style={[styles.appStoreRow, ctaStyle]}
              >
                <TouchableOpacity style={styles.appStoreBtn}>
-@@ -631,7 +631,7 @@ export default function WebsiteHomePage() {
-           </Animated.Text>
-           
-           <Animated.View 
--            entering={BounceInUp.delay(500).duration(600)}
-+            entering={BounceInDown.delay(500).duration(600)}
-             style={ctaStyle}
-           >
-             <TouchableOpacity 
+diff --git a/model.patch b/model.patch
+index a0d5980..e69de29 100644
+--- a/model.patch
++++ b/model.patch
+@@ -1,22 +0,0 @@
+-diff --git a/frontend/app/website/index.tsx b/frontend/app/website/index.tsx
+-index 4e79bda..c6ee2db 100644
+---- a/frontend/app/website/index.tsx
+-+++ b/frontend/app/website/index.tsx
+-@@ -417,7 +417,7 @@ export default function WebsiteHomePage() {
+- 
+-             {/* App Store Buttons */}
+-             <Animated.View 
+--              entering={BounceInUp.delay(700).duration(600)}
+-+              entering={BounceInDown.delay(700).duration(600)}
+-               style={[styles.appStoreRow, ctaStyle]}
+-             >
+-               <TouchableOpacity style={styles.appStoreBtn}>
+-@@ -631,7 +631,7 @@ export default function WebsiteHomePage() {
+-           </Animated.Text>
+-           
+-           <Animated.View 
+--            entering={BounceInUp.delay(500).duration(600)}
+-+            entering={BounceInDown.delay(500).duration(600)}
+-             style={ctaStyle}
+-           >
+-             <TouchableOpacity 
