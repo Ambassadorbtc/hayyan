@@ -834,6 +834,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 4,
     borderColor: COLORS.primary,
+    overflow: 'hidden',
+  },
+  hayyanImage: {
+    width: 160,
+    height: 160,
   },
   hayyanEmoji: {
     fontSize: 80,
