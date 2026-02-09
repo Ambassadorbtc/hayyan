@@ -289,6 +289,9 @@ export default function WebsiteHomePage() {
       </View>
 
       <WebFooter />
+      
+      {/* Cookie Consent Banner */}
+      <CookieConsent />
     </ScrollView>
   );
 }
