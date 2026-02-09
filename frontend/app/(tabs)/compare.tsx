@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   sortButtonActive: {
-    backgroundColor: COLORS.primaryGreen,
-    borderColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   sortButtonText: {
     ...TYPOGRAPHY.bodySmall,
