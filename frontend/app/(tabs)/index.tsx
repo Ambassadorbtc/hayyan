@@ -107,7 +107,7 @@ export default function DashboardScreen() {
         <Animated.View entering={FadeInDown.delay(200).duration(500)}>
           <Animated.View style={[styles.savingsCard, pulseStyle]}>
             <LinearGradient
-              colors={['#00A676', '#00C08B']}
+              colors={['#7B5CF6', '#9D85F6']}
               style={styles.savingsGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -214,10 +214,10 @@ export default function DashboardScreen() {
           </View>
         </Animated.View>
 
-        {/* Enezi Tip */}
+        {/* Hayyan Tip */}
         <Animated.View entering={FadeInUp.delay(800).duration(500)} style={styles.tipCard}>
           <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>💡 Enezi's Tip</Text>
+            <Text style={styles.tipTitle}>💡 Hayyan's Tip</Text>
             <Text style={styles.tipText}>
               Did you know? UK businesses overpay on energy by an average of £600 per year. Let me help you find better deals!
             </Text>
@@ -436,12 +436,12 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF9E6',
+    backgroundColor: '#F5F0FF',
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginTop: SPACING.xl,
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.highlightYellow,
+    borderLeftColor: COLORS.primary,
   },
   tipContent: {
     flex: 1,
