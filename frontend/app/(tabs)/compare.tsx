@@ -370,14 +370,14 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   savingsBadge: {
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: BORDER_RADIUS.sm,
   },
   savingsPercentText: {
     ...TYPOGRAPHY.caption,
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   savingsAmount: {
