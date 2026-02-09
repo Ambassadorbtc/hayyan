@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
-import { COLORS } from '../../src/constants/colors';
+import { COLORS } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');

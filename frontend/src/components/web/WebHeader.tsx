@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { COLORS } from '../../src/constants/colors';
+import { COLORS } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
