@@ -19,6 +19,7 @@ import { COLORS } from '../../src/constants/colors';
 import { WebHeader } from '../../src/components/web/WebHeader';
 import { WebFooter } from '../../src/components/web/WebFooter';
 import { AppStoreButtons } from '../../src/components/web/AppStoreButtons';
+import { CookieConsent } from '../../src/components/web/CookieConsent';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
