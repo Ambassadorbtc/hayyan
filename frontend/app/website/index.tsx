@@ -772,6 +772,70 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   
+  // Mockup screen styles
+  mockupScreen: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+  },
+  mockupHeader: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mockupTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1A2E',
+  },
+  mockupCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  mockupCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  mockupSupplier: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A2E',
+  },
+  mockupBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  mockupBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  mockupSavings: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  mockupButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  mockupButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  
   // Floating badges
   floatingBadge: {
     position: 'absolute',
