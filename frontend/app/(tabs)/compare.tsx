@@ -150,7 +150,7 @@ export default function CompareScreen() {
             </View>
             {!hasSupplierInfo && (
               <TouchableOpacity style={styles.addBillButton} onPress={handleAddBills}>
-                <Ionicons name="add-circle" size={18} color={COLORS.primaryGreen} />
+                <Ionicons name="add-circle" size={18} color={COLORS.primary} />
                 <Text style={styles.addBillText}>Add your bills for accurate quotes</Text>
               </TouchableOpacity>
             )}
