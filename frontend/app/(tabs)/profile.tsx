@@ -73,7 +73,7 @@ export default function ProfileScreen() {
         <Animated.View entering={FadeInDown.delay(200).duration(500)}>
           <View style={styles.profileCard}>
             <LinearGradient
-              colors={['#00A676', '#00C08B']}
+              colors={['#7B5CF6', '#9D85F6']}
               style={styles.profileGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -87,9 +87,9 @@ export default function ProfileScreen() {
                 </View>
                 <View style={styles.profileInfo}>
                   <Text style={styles.profileName}>
-                    {user?.firstName || 'Enerzo'} {user?.lastName || 'User'}
+                    {user?.firstName || 'Hayyan'} {user?.lastName || 'User'}
                   </Text>
-                  <Text style={styles.profileEmail}>{user?.email || 'user@enerzo.com'}</Text>
+                  <Text style={styles.profileEmail}>{user?.email || 'user@hayyan.com'}</Text>
                   <View style={styles.businessBadge}>
                     <Ionicons name="business" size={14} color={COLORS.textLight} />
                     <Text style={styles.businessText}>
@@ -178,7 +178,7 @@ export default function ProfileScreen() {
 
         {/* App Version */}
         <Animated.View entering={FadeInUp.delay(600).duration(500)} style={styles.versionContainer}>
-          <Text style={styles.versionText}>Enerzo v1.0.0</Text>
+          <Text style={styles.versionText}>Hayyan v1.0.0</Text>
           <Text style={styles.copyrightText}>Made with ⚡ for UK businesses</Text>
         </Animated.View>
       </ScrollView>
