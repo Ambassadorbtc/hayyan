@@ -113,12 +113,12 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   
   resetOnboarding: () => {
     set({ ...initialState, currentStep: 0, isCompleted: false, userId: null });
-    AsyncStorage.removeItem('enerzo_onboarding');
+    AsyncStorage.removeItem('hayyan_onboarding');
   },
   
   loadFromStorage: async () => {
     try {
-      const data = await AsyncStorage.getItem('enerzo_onboarding');
+      const data = await AsyncStorage.getItem('hayyan_onboarding');
       if (data) {
         const parsed = JSON.parse(data);
         set(parsed);
