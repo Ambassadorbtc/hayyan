@@ -1,12 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  FadeIn,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../src/constants/typography';
@@ -53,12 +49,12 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { icon: 'person', label: 'Edit Profile', action: () => {} },
-    { icon: 'business', label: 'Business Details', action: () => {} },
-    { icon: 'notifications', label: 'Notifications', action: () => {} },
-    { icon: 'help-circle', label: 'Help & FAQs', action: () => {} },
-    { icon: 'document-text', label: 'Terms of Service', action: () => {} },
-    { icon: 'shield-checkmark', label: 'Privacy Policy', action: () => {} },
+    { icon: 'person', label: 'Edit Profile', route: '/settings/edit-profile' },
+    { icon: 'business', label: 'Business Details', route: '/settings/business-details' },
+    { icon: 'notifications', label: 'Notifications', route: '/settings/notifications' },
+    { icon: 'help-circle', label: 'Help & FAQs', route: '/settings/help' },
+    { icon: 'document-text', label: 'Terms of Service', route: '/settings/terms' },
+    { icon: 'shield-checkmark', label: 'Privacy Policy', route: '/settings/privacy' },
   ];
 
   return (
@@ -151,7 +147,10 @@ export default function ProfileScreen() {
           <View style={styles.menuCard}>
             {menuItems.map((item, index) => (
               <React.Fragment key={item.label}>
-                <TouchableOpacity style={styles.menuItem} onPress={item.action}>
+                <TouchableOpacity 
+                  style={styles.menuItem} 
+                  onPress={() => router.push(item.route as any)}
+                >
                   <View style={styles.menuIconContainer}>
                     <Ionicons name={item.icon as any} size={22} color={COLORS.primaryGreen} />
                   </View>
