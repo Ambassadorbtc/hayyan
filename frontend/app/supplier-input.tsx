@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
   FadeInUp,
   FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../src/constants/colors';
@@ -13,10 +19,11 @@ import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../src/constants/typography'
 import { Enezi } from '../src/components/mascot/Enezi';
 import { SpeechBubble } from '../src/components/ui/SpeechBubble';
 import { AnimatedButton } from '../src/components/ui/AnimatedButton';
-import { AnimatedInput } from '../src/components/ui/AnimatedInput';
 import { SuccessOverlay } from '../src/components/ui/SuccessOverlay';
 import { useOnboardingStore } from '../src/store/onboardingStore';
 import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 // UK Energy Suppliers
 const UK_SUPPLIERS = [
@@ -48,6 +55,38 @@ export default function SupplierInputScreen() {
   const [showGasDropdown, setShowGasDropdown] = useState(false);
   const [electricBill, setElectricBill] = useState(monthlyElectricBill ? monthlyElectricBill.toString() : '');
   const [gasBill, setGasBill] = useState(monthlyGasBill ? monthlyGasBill.toString() : '');
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 300);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1500);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleClose = () => {
     router.back();
@@ -83,7 +122,7 @@ export default function SupplierInputScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -108,16 +147,18 @@ export default function SupplierInputScreen() {
             <View style={styles.placeholder} />
           </Animated.View>
 
-          {/* Enezi Section */}
-          <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.eneziSection}>
+          {/* Character Section */}
+          <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.characterSection}>
             <SpeechBubble
               message="Add your current suppliers and bills for accurate savings estimates! 💰"
               position="bottom"
               delay={300}
             />
-            <View style={styles.eneziContainer}>
-              <Enezi size={100} expression="pointing" animated />
-            </View>
+            {showCharacter && (
+              <Animated.View style={[styles.characterContainer, characterStyle]}>
+                <Enezi size={100} expression="pointing" animated={false} />
+              </Animated.View>
+            )}
           </Animated.View>
 
           {/* Electricity Section */}
@@ -132,7 +173,10 @@ export default function SupplierInputScreen() {
             {/* Supplier Dropdown */}
             <TouchableOpacity
               style={styles.dropdown}
-              onPress={() => setShowElectricDropdown(!showElectricDropdown)}
+              onPress={() => {
+                setShowElectricDropdown(!showElectricDropdown);
+                setShowGasDropdown(false);
+              }}
             >
               <Text style={currentElectricSupplier ? styles.dropdownText : styles.dropdownPlaceholder}>
                 {currentElectricSupplier || 'Select your supplier'}
@@ -146,40 +190,61 @@ export default function SupplierInputScreen() {
 
             {showElectricDropdown && (
               <View style={styles.dropdownList}>
-                {UK_SUPPLIERS.map((supplier) => (
-                  <TouchableOpacity
-                    key={supplier}
-                    style={[
-                      styles.dropdownItem,
-                      currentElectricSupplier === supplier && styles.dropdownItemSelected,
-                    ]}
-                    onPress={() => selectElectricSupplier(supplier)}
-                  >
-                    <Text
+                <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                  {UK_SUPPLIERS.map((supplier) => (
+                    <TouchableOpacity
+                      key={supplier}
                       style={[
-                        styles.dropdownItemText,
-                        currentElectricSupplier === supplier && styles.dropdownItemTextSelected,
+                        styles.dropdownItem,
+                        currentElectricSupplier === supplier && styles.dropdownItemSelected,
                       ]}
+                      onPress={() => selectElectricSupplier(supplier)}
                     >
-                      {supplier}
-                    </Text>
-                    {currentElectricSupplier === supplier && (
-                      <Ionicons name="checkmark" size={18} color={COLORS.primaryGreen} />
-                    )}
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          currentElectricSupplier === supplier && styles.dropdownItemTextSelected,
+                        ]}
+                      >
+                        {supplier}
+                      </Text>
+                      {currentElectricSupplier === supplier && (
+                        <Ionicons name="checkmark" size={18} color={COLORS.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
 
-            {/* Monthly Bill */}
-            <AnimatedInput
-              label="Monthly Bill (£)"
-              icon="card"
-              value={electricBill}
-              onChangeText={setElectricBill}
-              keyboardType="numeric"
-              helperText="Your average monthly electricity cost"
-            />
+            {/* Monthly Bill Input */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Monthly Bill (£)</Text>
+              <View style={styles.billInput}>
+                <Ionicons name="card" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.currencySymbol}>£</Text>
+                  <View style={styles.textInputContainer}>
+                    <input
+                      type="number"
+                      value={electricBill}
+                      onChange={(e) => setElectricBill(e.target.value)}
+                      placeholder="0"
+                      style={{
+                        border: 'none',
+                        outline: 'none',
+                        background: 'transparent',
+                        fontSize: 16,
+                        color: '#1A1A2E',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.inputHelper}>Your average monthly electricity cost</Text>
+            </View>
           </Animated.View>
 
           {/* Gas Section */}
@@ -194,7 +259,10 @@ export default function SupplierInputScreen() {
             {/* Supplier Dropdown */}
             <TouchableOpacity
               style={styles.dropdown}
-              onPress={() => setShowGasDropdown(!showGasDropdown)}
+              onPress={() => {
+                setShowGasDropdown(!showGasDropdown);
+                setShowElectricDropdown(false);
+              }}
             >
               <Text style={currentGasSupplier ? styles.dropdownText : styles.dropdownPlaceholder}>
                 {currentGasSupplier || 'Select your supplier'}
@@ -208,40 +276,61 @@ export default function SupplierInputScreen() {
 
             {showGasDropdown && (
               <View style={styles.dropdownList}>
-                {UK_SUPPLIERS.map((supplier) => (
-                  <TouchableOpacity
-                    key={supplier}
-                    style={[
-                      styles.dropdownItem,
-                      currentGasSupplier === supplier && styles.dropdownItemSelected,
-                    ]}
-                    onPress={() => selectGasSupplier(supplier)}
-                  >
-                    <Text
+                <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                  {UK_SUPPLIERS.map((supplier) => (
+                    <TouchableOpacity
+                      key={supplier}
                       style={[
-                        styles.dropdownItemText,
-                        currentGasSupplier === supplier && styles.dropdownItemTextSelected,
+                        styles.dropdownItem,
+                        currentGasSupplier === supplier && styles.dropdownItemSelected,
                       ]}
+                      onPress={() => selectGasSupplier(supplier)}
                     >
-                      {supplier}
-                    </Text>
-                    {currentGasSupplier === supplier && (
-                      <Ionicons name="checkmark" size={18} color={COLORS.primaryGreen} />
-                    )}
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          currentGasSupplier === supplier && styles.dropdownItemTextSelected,
+                        ]}
+                      >
+                        {supplier}
+                      </Text>
+                      {currentGasSupplier === supplier && (
+                        <Ionicons name="checkmark" size={18} color={COLORS.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
 
-            {/* Monthly Bill */}
-            <AnimatedInput
-              label="Monthly Bill (£)"
-              icon="card"
-              value={gasBill}
-              onChangeText={setGasBill}
-              keyboardType="numeric"
-              helperText="Your average monthly gas cost"
-            />
+            {/* Monthly Bill Input */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Monthly Bill (£)</Text>
+              <View style={styles.billInput}>
+                <Ionicons name="card" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.currencySymbol}>£</Text>
+                  <View style={styles.textInputContainer}>
+                    <input
+                      type="number"
+                      value={gasBill}
+                      onChange={(e) => setGasBill(e.target.value)}
+                      placeholder="0"
+                      style={{
+                        border: 'none',
+                        outline: 'none',
+                        background: 'transparent',
+                        fontSize: 16,
+                        color: '#1A1A2E',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.inputHelper}>Your average monthly gas cost</Text>
+            </View>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -310,15 +399,15 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40,
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.md,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.sm,
   },
   section: {
-    marginTop: SPACING.lg,
+    marginTop: SPACING.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -343,11 +432,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: COLORS.cardBackground,
     borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    ...SHADOWS.small,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    minHeight: 56,
   },
   dropdownText: {
     ...TYPOGRAPHY.body,
@@ -362,28 +451,75 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
+    marginTop: SPACING.xs,
     marginBottom: SPACING.md,
-    maxHeight: 200,
+    overflow: 'hidden',
     ...SHADOWS.medium,
+  },
+  dropdownScroll: {
+    maxHeight: 220,
   },
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
+    minHeight: 50,
   },
   dropdownItemSelected: {
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
   },
   dropdownItemText: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
   },
   dropdownItemTextSelected: {
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
     fontWeight: '600',
+  },
+  inputContainer: {
+    marginTop: SPACING.md,
+  },
+  inputLabel: {
+    ...TYPOGRAPHY.label,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  billInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1.5,
+    borderColor: COLORS.cardBorder,
+    paddingHorizontal: SPACING.md,
+    minHeight: 56,
+  },
+  inputIcon: {
+    marginRight: SPACING.sm,
+  },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencySymbol: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textPrimary,
+    marginRight: 4,
+  },
+  textInputContainer: {
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+  },
+  inputHelper: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
   },
   bottomSection: {
     paddingHorizontal: SPACING.lg,
