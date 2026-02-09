@@ -417,7 +417,7 @@ export default function WebsiteHomePage() {
 
             {/* App Store Buttons */}
             <Animated.View 
-              entering={BounceInDown.delay(700).duration(600)}
+              entering={ZoomIn.delay(700).duration(600)}
               style={[styles.appStoreRow, ctaStyle]}
             >
               <TouchableOpacity style={styles.appStoreBtn}>
