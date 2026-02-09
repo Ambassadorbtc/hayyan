@@ -133,7 +133,7 @@ export default function BusinessTypeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });
