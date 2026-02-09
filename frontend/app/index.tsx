@@ -24,7 +24,7 @@ export default function SplashScreen() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useUserStore();
   const { isCompleted } = useOnboardingStore();
-  const [showEnezi, setShowEnezi] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(false);
 
   // Animation values
   const logoOpacity = useSharedValue(0);
@@ -33,9 +33,11 @@ export default function SplashScreen() {
   const titleTranslateY = useSharedValue(30);
   const titleOpacity = useSharedValue(0);
   const subtitleOpacity = useSharedValue(0);
-  const eneziOpacity = useSharedValue(0);
-  const eneziTranslateY = useSharedValue(50);
   const sparkleOpacity = useSharedValue(0);
+  
+  // Character slides from RIGHT to CENTER
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterOpacity = useSharedValue(0);
 
   const navigateToNext = () => {
     if (isAuthenticated && isCompleted) {
@@ -70,10 +72,13 @@ export default function SplashScreen() {
     titleOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
     subtitleOpacity.value = withDelay(900, withTiming(1, { duration: 400 }));
 
-    // Show Enezi
-    setTimeout(() => setShowEnezi(true), 1000);
-    eneziOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
-    eneziTranslateY.value = withDelay(1000, withSpring(0, { damping: 12, stiffness: 150 }));
+    // Show character sliding from RIGHT
+    setTimeout(() => setShowCharacter(true), 1000);
+    characterOpacity.value = withDelay(1000, withTiming(1, { duration: 300 }));
+    characterTranslateX.value = withDelay(
+      1000, 
+      withSpring(0, { damping: 15, stiffness: 80, mass: 1 })
+    );
 
     // Sparkle effects
     sparkleOpacity.value = withDelay(
@@ -112,9 +117,10 @@ export default function SplashScreen() {
     opacity: subtitleOpacity.value,
   }));
 
-  const eneziStyle = useAnimatedStyle(() => ({
-    opacity: eneziOpacity.value,
-    transform: [{ translateY: eneziTranslateY.value }],
+  // Character slides from right to center
+  const characterStyle = useAnimatedStyle(() => ({
+    opacity: characterOpacity.value,
+    transform: [{ translateX: characterTranslateX.value }],
   }));
 
   const sparkleStyle = useAnimatedStyle(() => ({
@@ -123,7 +129,7 @@ export default function SplashScreen() {
 
   return (
     <LinearGradient
-      colors={['#00A676', '#00C08B', '#00D4AA']}
+      colors={['#7B5CF6', '#9D85F6', '#B8A4F8']}
       style={styles.container}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -143,20 +149,20 @@ export default function SplashScreen() {
           <Text style={styles.boltIcon}>⚡</Text>
         </Animated.View>
 
-        {/* App name */}
+        {/* App name - HAYYAN */}
         <Animated.View style={titleStyle}>
-          <Text style={styles.title}>Enerzo</Text>
+          <Text style={styles.title}>Hayyan</Text>
         </Animated.View>
 
         {/* Tagline */}
         <Animated.View style={subtitleStyle}>
-          <Text style={styles.subtitle}>Zap Your Energy Bills!</Text>
+          <Text style={styles.subtitle}>Slash Your Energy Bills!</Text>
         </Animated.View>
 
-        {/* Enezi mascot */}
-        {showEnezi && (
-          <Animated.View style={[styles.eneziContainer, eneziStyle]}>
-            <Enezi size={180} expression="excited" animated />
+        {/* Character sliding from right */}
+        {showCharacter && (
+          <Animated.View style={[styles.characterContainer, characterStyle]}>
+            <Enezi size={180} expression="excited" animated={false} />
           </Animated.View>
         )}
       </View>
@@ -214,7 +220,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: SPACING.sm,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.xxl,
   },
   footer: {
