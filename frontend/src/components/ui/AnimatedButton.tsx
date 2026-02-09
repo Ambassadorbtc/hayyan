@@ -77,7 +77,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
     if (disabled) return COLORS.textMuted;
     switch (variant) {
       case 'primary':
-        return COLORS.primaryGreen;
+        return COLORS.primary;
       case 'coral':
         return COLORS.accentCoral;
       case 'secondary':
@@ -85,13 +85,13 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
       case 'outline':
         return 'transparent';
       default:
-        return COLORS.primaryGreen;
+        return COLORS.primary;
     }
   };
 
   const getTextColor = () => {
     if (disabled) return COLORS.textLight;
-    return variant === 'outline' ? COLORS.primaryGreen : COLORS.textLight;
+    return variant === 'outline' ? COLORS.primary : COLORS.textLight;
   };
 
   const getSizeStyles = (): ViewStyle => {
@@ -128,7 +128,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
         getSizeStyles(),
         {
           backgroundColor: getBackgroundColor(),
-          borderColor: variant === 'outline' ? COLORS.primaryGreen : 'transparent',
+          borderColor: variant === 'outline' ? COLORS.primary : 'transparent',
           borderWidth: variant === 'outline' ? 2 : 0,
           width: fullWidth ? '100%' : 'auto',
         },
