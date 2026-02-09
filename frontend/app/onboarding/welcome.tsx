@@ -9,6 +9,7 @@ import Animated, {
   withDelay,
   withSpring,
   withSequence,
+  withRepeat,
   Easing,
   FadeInDown,
   FadeInUp,
@@ -29,9 +30,13 @@ export default function WelcomeScreen() {
   // Animation values
   const backgroundShift = useSharedValue(0);
   const contentOpacity = useSharedValue(0);
-  // Character slides from RIGHT to CENTER
-  const characterTranslateX = useSharedValue(width + 100);
   const thunderOpacity = useSharedValue(0);
+  
+  // Character slides from RIGHT to CENTER - SLOWER, NO BOUNCE
+  const characterTranslateX = useSharedValue(width + 150);
+  const characterOpacity = useSharedValue(0);
+  // Zoom in/out breathing effect once centered
+  const characterScale = useSharedValue(1);
 
   useEffect(() => {
     // Background gradient shift
@@ -43,11 +48,24 @@ export default function WelcomeScreen() {
     // Content fade in
     contentOpacity.value = withDelay(300, withTiming(1, { duration: 500 }));
 
-    // Character slides from RIGHT to CENTER
+    // Character slides from RIGHT to CENTER - SLOWER, SMOOTH
+    characterOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
     characterTranslateX.value = withDelay(
       600,
-      withSpring(0, { damping: 15, stiffness: 80, mass: 1 })
+      withTiming(0, { duration: 1200, easing: Easing.out(Easing.cubic) })
     );
+
+    // Start zoom in/out breathing effect after character arrives
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1800);
 
     // Thunder effect
     thunderOpacity.value = withDelay(
@@ -60,8 +78,8 @@ export default function WelcomeScreen() {
       )
     );
 
-    // Show speech bubble
-    setTimeout(() => setShowBubble(true), 1200);
+    // Show speech bubble after character arrives
+    setTimeout(() => setShowBubble(true), 1800);
   }, []);
 
   const handleYesPress = () => {
@@ -80,8 +98,13 @@ export default function WelcomeScreen() {
     opacity: contentOpacity.value,
   }));
 
-  const eneziStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: characterTranslateX.value }],
+  // Character slides from right to center, then zooms in/out
+  const characterStyle = useAnimatedStyle(() => ({
+    opacity: characterOpacity.value,
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
   }));
 
   const thunderStyle = useAnimatedStyle(() => ({
@@ -116,8 +139,8 @@ export default function WelcomeScreen() {
           <Text style={styles.subheadline}>Most business owners are right now.</Text>
         </Animated.View>
 
-        {/* Enezi Section */}
-        <View style={styles.eneziSection}>
+        {/* Character Section */}
+        <View style={styles.characterSection}>
           {/* Speech Bubble */}
           {showBubble && (
             <View style={styles.bubbleContainer}>
@@ -129,9 +152,9 @@ export default function WelcomeScreen() {
             </View>
           )}
 
-          {/* Enezi */}
-          <Animated.View style={[styles.eneziContainer, eneziStyle]}>
-            <Enezi size={200} expression="waving" animated />
+          {/* Character - slides from right, then breathes */}
+          <Animated.View style={[styles.characterContainer, characterStyle]}>
+            <Enezi size={200} expression="waving" animated={false} />
           </Animated.View>
         </View>
 
@@ -192,7 +215,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  eneziSection: {
+  characterSection: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -200,7 +223,7 @@ const styles = StyleSheet.create({
   bubbleContainer: {
     marginBottom: SPACING.md,
   },
-  eneziContainer: {
+  characterContainer: {
     alignItems: 'center',
   },
   ctaSection: {
