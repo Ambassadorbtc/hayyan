@@ -95,7 +95,7 @@ export default function WelcomeScreen() {
       {/* Background */}
       <Animated.View style={[StyleSheet.absoluteFill, backgroundStyle]}>
         <LinearGradient
-          colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+          colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
           style={StyleSheet.absoluteFill}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -124,7 +124,7 @@ export default function WelcomeScreen() {
           {showBubble && (
             <View style={styles.bubbleContainer}>
               <SpeechBubble
-                message="Oi boss! Your energy bills been shocking you lately? ⚡"
+                message="Hey there! I'm Hayyan. Ready to slash your energy bills? ⚡"
                 position="bottom"
                 delay={0}
               />
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });
