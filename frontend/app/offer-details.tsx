@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -8,10 +8,10 @@ import Animated, {
   FadeIn,
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withRepeat,
   withSequence,
   withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../src/constants/colors';
@@ -21,14 +21,17 @@ import { AnimatedButton } from '../src/components/ui/AnimatedButton';
 import { SuccessOverlay } from '../src/components/ui/SuccessOverlay';
 import { Ionicons } from '@expo/vector-icons';
 
+const { width } = Dimensions.get('window');
+
 export default function OfferDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(false);
 
   const supplierName = params.supplierName as string || 'Energy Supplier';
   const supplierLogo = params.supplierLogo as string || '⚡';
-  const supplierColor = params.supplierColor as string || COLORS.primaryGreen;
+  const supplierColor = params.supplierColor as string || COLORS.primary;
   const supplierRating = parseFloat(params.supplierRating as string) || 4.5;
   const savings = parseInt(params.savings as string) || 15;
   const monthlyBill = parseInt(params.monthlyBill as string) || 200;
@@ -38,6 +41,8 @@ export default function OfferDetailsScreen() {
 
   // Animation values
   const savingsScale = useSharedValue(1);
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
 
   useEffect(() => {
     savingsScale.value = withRepeat(
@@ -48,10 +53,35 @@ export default function OfferDetailsScreen() {
       -1,
       true
     );
+
+    // Character animation
+    setTimeout(() => setShowCharacter(true), 300);
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1500);
   }, []);
 
   const savingsStyle = useAnimatedStyle(() => ({
     transform: [{ scale: savingsScale.value }],
+  }));
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
   }));
 
   const handleClose = () => {
@@ -64,8 +94,6 @@ export default function OfferDetailsScreen() {
 
   const handleSuccessDismiss = () => {
     setShowSuccess(false);
-    // In a real app, this would navigate to the supplier's website
-    // Linking.openURL(`https://example.com/switch/${params.supplierId}`);
   };
 
   const features = [
@@ -89,7 +117,7 @@ export default function OfferDetailsScreen() {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Supplier Hero */}
+        {/* Supplier Hero - Using supplier's color for the card */}
         <Animated.View entering={FadeInDown.delay(200).duration(500)}>
           <LinearGradient
             colors={[supplierColor, `${supplierColor}CC`]}
@@ -114,9 +142,11 @@ export default function OfferDetailsScreen() {
                 <Text style={styles.ratingText}>{supplierRating}</Text>
               </View>
             </View>
-            <View style={styles.heroEnezi}>
-              <Enezi size={80} expression="excited" animated />
-            </View>
+            {showCharacter && (
+              <Animated.View style={[styles.heroCharacter, characterStyle]}>
+                <Enezi size={80} expression="excited" animated={false} />
+              </Animated.View>
+            )}
           </LinearGradient>
         </Animated.View>
 
@@ -126,7 +156,7 @@ export default function OfferDetailsScreen() {
             <View style={styles.savingsHeader}>
               <Text style={styles.savingsLabel}>Your Potential Savings</Text>
               <View style={styles.savingsBadge}>
-                <Ionicons name="trending-up" size={14} color={COLORS.primaryGreen} />
+                <Ionicons name="trending-up" size={14} color={COLORS.primary} />
                 <Text style={styles.savingsPercent}>{savings}% off</Text>
               </View>
             </View>
@@ -150,8 +180,8 @@ export default function OfferDetailsScreen() {
           <View style={styles.featuresGrid}>
             {features.map((feature, index) => (
               <View key={feature.title} style={styles.featureCard}>
-                <View style={[styles.featureIcon, { backgroundColor: `${supplierColor}20` }]}>
-                  <Ionicons name={feature.icon as any} size={24} color={supplierColor} />
+                <View style={[styles.featureIcon, { backgroundColor: `${COLORS.primary}15` }]}>
+                  <Ionicons name={feature.icon as any} size={24} color={COLORS.primary} />
                 </View>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureSubtitle}>{feature.subtitle}</Text>
@@ -198,19 +228,19 @@ export default function OfferDetailsScreen() {
 
         {/* Trust Note */}
         <Animated.View entering={FadeInUp.delay(1000).duration(500)} style={styles.trustNote}>
-          <Ionicons name="shield-checkmark" size={24} color={COLORS.primaryGreen} />
+          <Ionicons name="shield-checkmark" size={24} color={COLORS.primary} />
           <Text style={styles.trustText}>
             Your supply won't be interrupted during the switch. It's regulated by Ofgem.
           </Text>
         </Animated.View>
       </ScrollView>
 
-      {/* Bottom CTA */}
+      {/* Bottom CTA - PURPLE button */}
       <Animated.View entering={FadeInUp.delay(1200).duration(400)} style={styles.bottomSection}>
         <AnimatedButton
           title="Get My Quote"
           onPress={handleGetQuote}
-          variant="coral"
+          variant="primary"
           size="large"
           fullWidth
           pulsing
@@ -296,7 +326,7 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginLeft: SPACING.xs,
   },
-  heroEnezi: {
+  heroCharacter: {
     marginLeft: SPACING.md,
   },
   savingsCard: {
@@ -319,7 +349,7 @@ const styles = StyleSheet.create({
   savingsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: BORDER_RADIUS.full,
@@ -327,7 +357,7 @@ const styles = StyleSheet.create({
   },
   savingsPercent: {
     ...TYPOGRAPHY.label,
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
   },
   savingsRow: {
     flexDirection: 'row',
@@ -344,7 +374,7 @@ const styles = StyleSheet.create({
   },
   savingsItemValue: {
     ...TYPOGRAPHY.h2,
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
   },
   savingsDivider: {
     width: 1,
@@ -403,7 +433,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -436,7 +466,7 @@ const styles = StyleSheet.create({
   trustNote: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginTop: SPACING.xl,
