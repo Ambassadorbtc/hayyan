@@ -131,7 +131,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   saveToStorage: async () => {
     try {
       const state = get();
-      await AsyncStorage.setItem('enerzo_onboarding', JSON.stringify({
+      await AsyncStorage.setItem('hayyan_onboarding', JSON.stringify({
         ...state,
         setWorries: undefined,
         setLastSupplierChange: undefined,
