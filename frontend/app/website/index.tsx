@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   FadeIn,
@@ -10,6 +10,7 @@ import Animated, {
   SlideInRight,
   SlideInLeft,
   SlideInUp,
+  ZoomIn,
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
@@ -19,84 +20,137 @@ import Animated, {
   withDelay,
   Easing,
   interpolate,
-  useAnimatedScrollHandler,
+  runOnJS,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../src/constants/colors';
 import { WebHeader } from '../../src/components/web/WebHeader';
 import { WebFooter } from '../../src/components/web/WebFooter';
-import { AppStoreButtons } from '../../src/components/web/AppStoreButtons';
 import { CookieConsent } from '../../src/components/web/CookieConsent';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 const isDesktop = Platform.OS === 'web' && width > 768;
 
+// Animated Counter Component
+const AnimatedCounter = ({ target, duration = 2000, suffix = '' }: { target: number; duration?: number; suffix?: string }) => {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    let start = 0;
+    const increment = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target]);
+  
+  return <Text style={styles.statValue}>{count.toLocaleString()}{suffix}</Text>;
+};
+
 export default function WebsiteHomePage() {
   const router = useRouter();
   
-  // Multiple animation values for rich effects
-  const phoneFloat = useSharedValue(0);
+  // Phone animations - 45 degree tilt, float, glow
+  const phoneSlide = useSharedValue(300);
   const phoneRotate = useSharedValue(0);
-  const glowPulse = useSharedValue(0);
-  const particleFloat1 = useSharedValue(0);
-  const particleFloat2 = useSharedValue(0);
-  const particleFloat3 = useSharedValue(0);
-  const scrollY = useSharedValue(0);
+  const phoneFloat = useSharedValue(0);
+  const phoneGlow = useSharedValue(0.3);
+  const phoneTilt = useSharedValue(0);
   
-  useEffect(() => {
-    // Floating phone animation
-    phoneFloat.value = withRepeat(
-      withSequence(
-        withTiming(-20, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-    
-    // Subtle rotation
-    phoneRotate.value = withRepeat(
-      withSequence(
-        withTiming(2, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(-2, { duration: 3000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-    
-    // Glow pulse
-    glowPulse.value = withRepeat(
-      withSequence(
-        withTiming(1.2, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
+  // Button pulse
+  const buttonPulse = useSharedValue(1);
+  
+  // Hayyan character
+  const hayyanSlide = useSharedValue(-200);
+  const hayyanPulse = useSharedValue(1);
+  
+  // Hand phone slide
+  const handPhoneSlide = useSharedValue(400);
+  
+  // Particles
+  const particle1 = useSharedValue(0);
+  const particle2 = useSharedValue(0);
+  const particle3 = useSharedValue(0);
 
-    // Particle animations
-    particleFloat1.value = withRepeat(
-      withSequence(
-        withTiming(-30, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 4000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
+  useEffect(() => {
+    // Phone slide in from right at 45 degrees
+    phoneSlide.value = withDelay(500, withSpring(0, { damping: 15, stiffness: 80 }));
+    phoneRotate.value = withDelay(500, withSpring(-8, { damping: 12, stiffness: 100 }));
+    phoneTilt.value = withDelay(500, withSpring(5, { damping: 12, stiffness: 100 }));
     
-    particleFloat2.value = withDelay(500, withRepeat(
+    // Continuous float
+    phoneFloat.value = withDelay(1500, withRepeat(
       withSequence(
-        withTiming(-25, { duration: 3500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 3500, easing: Easing.inOut(Easing.ease) })
+        withTiming(-15, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.ease) })
       ),
       -1,
       true
     ));
     
-    particleFloat3.value = withDelay(1000, withRepeat(
+    // Glow pulse
+    phoneGlow.value = withDelay(1000, withRepeat(
       withSequence(
-        withTiming(-35, { duration: 5000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.8, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.3, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    ));
+    
+    // Button pulse
+    buttonPulse.value = withDelay(1200, withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    ));
+    
+    // Hayyan slide in
+    hayyanSlide.value = withDelay(800, withSpring(0, { damping: 12, stiffness: 60 }));
+    
+    // Hayyan pulse
+    hayyanPulse.value = withDelay(2000, withRepeat(
+      withSequence(
+        withTiming(1.08, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    ));
+    
+    // Hand phone slide
+    handPhoneSlide.value = withDelay(300, withSpring(0, { damping: 15, stiffness: 70 }));
+    
+    // Particles float
+    particle1.value = withRepeat(
+      withSequence(
+        withTiming(-40, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 4000, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+    particle2.value = withDelay(500, withRepeat(
+      withSequence(
+        withTiming(-30, { duration: 3500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 3500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    ));
+    particle3.value = withDelay(1000, withRepeat(
+      withSequence(
+        withTiming(-50, { duration: 5000, easing: Easing.inOut(Easing.ease) }),
         withTiming(0, { duration: 5000, easing: Easing.inOut(Easing.ease) })
       ),
       -1,
@@ -104,304 +158,278 @@ export default function WebsiteHomePage() {
     ));
   }, []);
 
-  const phoneStyle = useAnimatedStyle(() => ({
+  // Phone style with 45 degree tilt and glow
+  const phoneAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
+      { translateX: phoneSlide.value },
       { translateY: phoneFloat.value },
-      { rotate: `${phoneRotate.value}deg` },
+      { rotateZ: `${phoneRotate.value}deg` },
+      { rotateY: `${phoneTilt.value}deg` },
     ],
   }));
 
-  const glowStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: glowPulse.value }],
-    opacity: interpolate(glowPulse.value, [1, 1.2], [0.3, 0.6]),
+  const glowAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: phoneGlow.value,
+    transform: [{ scale: interpolate(phoneGlow.value, [0.3, 0.8], [1, 1.3]) }],
+  }));
+
+  const buttonPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonPulse.value }],
+  }));
+
+  const hayyanAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: hayyanSlide.value },
+      { scale: hayyanPulse.value },
+    ],
+  }));
+
+  const handPhoneStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: handPhoneSlide.value }],
   }));
 
   const particle1Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: particleFloat1.value }],
+    transform: [{ translateY: particle1.value }],
   }));
-
   const particle2Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: particleFloat2.value }],
+    transform: [{ translateY: particle2.value }],
   }));
-
   const particle3Style = useAnimatedStyle(() => ({
-    transform: [{ translateY: particleFloat3.value }],
+    transform: [{ translateY: particle3.value }],
   }));
-
-  const features = [
-    {
-      icon: 'flash',
-      title: 'Instant Comparisons',
-      description: 'Compare all UK energy suppliers in seconds. See your potential savings immediately.',
-      color: '#FF9800',
-      delay: 0,
-    },
-    {
-      icon: 'trending-down',
-      title: 'Save Up to 40%',
-      description: 'UK businesses save an average of £600/year by switching with Hayyan.',
-      color: '#4CAF50',
-      delay: 100,
-    },
-    {
-      icon: 'shield-checkmark',
-      title: 'Ofgem Regulated',
-      description: 'All suppliers are regulated by Ofgem. Your switch is 100% guaranteed safe.',
-      color: '#2196F3',
-      delay: 200,
-    },
-    {
-      icon: 'time',
-      title: 'Switch in Minutes',
-      description: 'No paperwork, no hassle. We handle everything for a seamless switch.',
-      color: COLORS.primary,
-      delay: 300,
-    },
-  ];
 
   const stats = [
-    { value: '10,000+', label: 'Businesses Helped', icon: '🏪' },
-    { value: '£2.5M+', label: 'Total Savings', icon: '💰' },
-    { value: '4.9★', label: 'App Rating', icon: '⭐' },
-    { value: '2 min', label: 'Average Switch Time', icon: '⚡' },
-  ];
-
-  const testimonials = [
-    {
-      quote: "Saved £800 on our cafe's energy bills in the first year. The app made it so easy!",
-      author: 'Sarah M.',
-      business: 'The Corner Cafe, Manchester',
-      avatar: '👩‍🍳',
-    },
-    {
-      quote: "As a mechanic, I never had time to compare suppliers. Hayyan did it all for me.",
-      author: 'James T.',
-      business: 'JT Auto Repairs, Birmingham',
-      avatar: '👨‍🔧',
-    },
-    {
-      quote: "Finally, an energy app that actually understands small business needs!",
-      author: 'Priya K.',
-      business: 'Glow Beauty Salon, London',
-      avatar: '💇‍♀️',
-    },
-  ];
-
-  const howItWorks = [
-    { step: '01', title: 'Download', desc: 'Get the free app', icon: 'download' },
-    { step: '02', title: 'Enter Details', desc: 'Your current supplier', icon: 'create' },
-    { step: '03', title: 'Compare', desc: 'See all deals instantly', icon: 'bar-chart' },
-    { step: '04', title: 'Save', desc: 'Switch & save money', icon: 'checkmark-circle' },
+    { value: 10000, label: 'Businesses Helped', suffix: '+', icon: '🏪' },
+    { value: 2500000, label: 'Total Savings', prefix: '£', suffix: '', icon: '💰' },
+    { value: 49, label: 'App Rating', suffix: '/5', icon: '⭐', decimal: true },
+    { value: 2, label: 'Minute Switch', suffix: ' min', icon: '⚡' },
   ];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <WebHeader />
 
-      {/* HERO SECTION - BIG & BOLD */}
+      {/* ==================== HERO SECTION ==================== */}
       <View style={styles.heroSection}>
         <LinearGradient
-          colors={['#F5F3FF', '#EDE9FE', '#E8E0FF', '#FFFFFF']}
+          colors={['#F8F6FF', '#F0EBFF', '#E8E0FF', '#FFFFFF']}
           style={StyleSheet.absoluteFill}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
         
-        {/* Animated Background Particles */}
-        <Animated.View style={[styles.particle, styles.particle1, particle1Style]}>
+        {/* Floating Particles */}
+        <Animated.View style={[styles.particle, { top: '10%', left: '5%' }, particle1Style]}>
           <Text style={styles.particleEmoji}>⚡</Text>
         </Animated.View>
-        <Animated.View style={[styles.particle, styles.particle2, particle2Style]}>
+        <Animated.View style={[styles.particle, { top: '20%', right: '10%' }, particle2Style]}>
           <Text style={styles.particleEmoji}>💡</Text>
         </Animated.View>
-        <Animated.View style={[styles.particle, styles.particle3, particle3Style]}>
-          <Text style={styles.particleEmoji}>🔋</Text>
-        </Animated.View>
-        <Animated.View style={[styles.particle, styles.particle4, particle1Style]}>
+        <Animated.View style={[styles.particle, { top: '60%', left: '8%' }, particle3Style]}>
           <Text style={styles.particleEmoji}>💰</Text>
         </Animated.View>
-        <Animated.View style={[styles.particle, styles.particle5, particle2Style]}>
-          <Text style={styles.particleEmoji}>🏪</Text>
+        <Animated.View style={[styles.particle, { bottom: '20%', right: '5%' }, particle1Style]}>
+          <Text style={styles.particleEmoji}>🔋</Text>
         </Animated.View>
 
         <View style={styles.heroContent}>
-          {/* Left Side - Text */}
-          <View style={styles.heroText}>
-            <Animated.View entering={SlideInLeft.delay(200).duration(800).springify()}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>🇬🇧 #1 Energy App for UK Businesses</Text>
+          {/* LEFT SIDE - Hero Text */}
+          <View style={styles.heroLeft}>
+            <Animated.View entering={FadeInLeft.delay(200).duration(800)}>
+              <View style={styles.heroBadge}>
+                <Text style={styles.heroBadgeText}>🇬🇧 #1 Energy Savings App</Text>
               </View>
             </Animated.View>
 
-            <Animated.Text 
-              entering={SlideInLeft.delay(400).duration(800).springify()} 
-              style={styles.heroTitle}
-            >
-              Slash Your{'\n'}Business{'\n'}
-              <Text style={styles.heroTitleHighlight}>Energy Bills</Text>
+            <Animated.Text entering={SlideInLeft.delay(400).duration(1000).springify()} style={styles.heroTitle}>
+              Zap your business bills in thirty seconds flat.
             </Animated.Text>
 
-            <Animated.Text 
-              entering={SlideInLeft.delay(600).duration(800).springify()} 
-              style={styles.heroSubtitle}
-            >
-              Compare UK energy suppliers instantly. Save up to 40% on your business energy costs with our free app.
+            <Animated.Text entering={FadeInLeft.delay(700).duration(800)} style={styles.heroSubtitle}>
+              Compare every UK energy supplier instantly. See exactly how much you'll save. Switch without lifting a finger.
             </Animated.Text>
 
-            <Animated.View entering={SlideInLeft.delay(800).duration(800).springify()}>
-              <AppStoreButtons delay={0} size="large" />
+            {/* App Store Buttons - PULSING */}
+            <Animated.View entering={FadeInUp.delay(1000).duration(600)} style={styles.appButtonsContainer}>
+              <Animated.View style={[styles.appStoreButton, buttonPulseStyle]}>
+                <TouchableOpacity style={styles.appButtonInner}>
+                  <Ionicons name="logo-apple" size={28} color="#FFFFFF" />
+                  <View>
+                    <Text style={styles.appButtonLabel}>Download on the</Text>
+                    <Text style={styles.appButtonStore}>App Store</Text>
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
+              
+              <Animated.View style={[styles.appStoreButton, buttonPulseStyle]}>
+                <TouchableOpacity style={styles.appButtonInner}>
+                  <Ionicons name="logo-google-playstore" size={28} color="#FFFFFF" />
+                  <View>
+                    <Text style={styles.appButtonLabel}>Get it on</Text>
+                    <Text style={styles.appButtonStore}>Google Play</Text>
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
             </Animated.View>
 
-            <Animated.View 
-              entering={FadeInUp.delay(1000).duration(600)} 
-              style={styles.heroTrust}
-            >
+            {/* Trust Badges */}
+            <Animated.View entering={FadeInUp.delay(1200).duration(600)} style={styles.trustBadges}>
               <View style={styles.trustItem}>
-                <Ionicons name="star" size={20} color="#FFD700" />
+                <Ionicons name="star" size={18} color="#FFD700" />
                 <Text style={styles.trustText}>4.9 Rating</Text>
               </View>
-              <View style={styles.trustDivider} />
               <View style={styles.trustItem}>
-                <Ionicons name="download" size={20} color={COLORS.primary} />
-                <Text style={styles.trustText}>50K+ Downloads</Text>
-              </View>
-              <View style={styles.trustDivider} />
-              <View style={styles.trustItem}>
-                <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
+                <Ionicons name="shield-checkmark" size={18} color="#4CAF50" />
                 <Text style={styles.trustText}>Ofgem Regulated</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <Ionicons name="people" size={18} color={COLORS.primary} />
+                <Text style={styles.trustText}>50K+ Users</Text>
               </View>
             </Animated.View>
           </View>
 
-          {/* Right Side - BIG Phone with ACTUAL App Screenshot */}
-          <Animated.View 
-            entering={SlideInRight.delay(400).duration(1000).springify()}
-            style={styles.heroPhoneContainer}
-          >
-            {/* Glow effect behind phone */}
-            <Animated.View style={[styles.phoneGlow, glowStyle]} />
+          {/* RIGHT SIDE - Phone at 45 degrees with GLOW */}
+          <View style={styles.heroRight}>
+            {/* Glow Effect Behind Phone */}
+            <Animated.View style={[styles.phoneGlowEffect, glowAnimatedStyle]} />
             
-            <Animated.View style={[styles.phoneMockupLarge, phoneStyle]}>
-              {/* Phone Frame */}
-              <View style={styles.phoneFrame}>
+            {/* Phone Mockup - Slides in at angle */}
+            <Animated.View style={[styles.phoneContainer, phoneAnimatedStyle]}>
+              <View style={styles.phoneMockup}>
                 <View style={styles.phoneNotch} />
-                {/* ACTUAL APP SCREENSHOT */}
                 <View style={styles.phoneScreen}>
-                  <Image
-                    source={require('../../assets/images/app-screenshot.png')}
-                    style={styles.appScreenshot}
-                    resizeMode="cover"
-                  />
+                  {/* Comparison Screen Content */}
+                  <View style={styles.screenHeader}>
+                    <Text style={styles.screenTitle}>Compare Deals</Text>
+                  </View>
+                  
+                  <View style={styles.supplierCard}>
+                    <View style={styles.supplierTop}>
+                      <Text style={styles.supplierEmoji}>🐙</Text>
+                      <View>
+                        <Text style={styles.supplierName}>Octopus Energy</Text>
+                        <View style={styles.savingsBadge}>
+                          <Text style={styles.savingsText}>Save 18%</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <Text style={styles.savingsAmount}>£432/year savings</Text>
+                    <TouchableOpacity style={styles.viewDealBtn}>
+                      <Text style={styles.viewDealText}>View Deal →</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <View style={[styles.supplierCard, styles.supplierCardAlt]}>
+                    <View style={styles.supplierTop}>
+                      <Text style={styles.supplierEmoji}>🔥</Text>
+                      <View>
+                        <Text style={styles.supplierName}>British Gas</Text>
+                        <View style={styles.savingsBadge}>
+                          <Text style={styles.savingsText}>Save 15%</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <Text style={styles.savingsAmount}>£360/year savings</Text>
+                  </View>
+                  
+                  <View style={styles.supplierCard}>
+                    <View style={styles.supplierTop}>
+                      <Text style={styles.supplierEmoji}>⚡</Text>
+                      <View>
+                        <Text style={styles.supplierName}>EDF Energy</Text>
+                        <View style={styles.savingsBadge}>
+                          <Text style={styles.savingsText}>Save 12%</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <Text style={styles.savingsAmount}>£288/year savings</Text>
+                  </View>
                 </View>
               </View>
               
-              {/* Floating elements around phone */}
-              <Animated.View style={[styles.floatingCard, styles.floatingCard1, particle1Style]}>
-                <Text style={styles.floatingEmoji}>💷</Text>
-                <Text style={styles.floatingText}>Save £432/yr</Text>
+              {/* Floating badges around phone */}
+              <Animated.View style={[styles.floatingBadge, styles.badge1, particle1Style]}>
+                <Text style={styles.floatingBadgeEmoji}>💷</Text>
+                <Text style={styles.floatingBadgeText}>Save £432</Text>
               </Animated.View>
-              
-              <Animated.View style={[styles.floatingCard, styles.floatingCard2, particle2Style]}>
-                <Text style={styles.floatingEmoji}>⚡</Text>
-                <Text style={styles.floatingText}>18% cheaper</Text>
-              </Animated.View>
-              
-              <Animated.View style={[styles.floatingCard, styles.floatingCard3, particle3Style]}>
-                <Text style={styles.floatingEmoji}>✓</Text>
-                <Text style={styles.floatingText}>Instant switch</Text>
+              <Animated.View style={[styles.floatingBadge, styles.badge2, particle2Style]}>
+                <Text style={styles.floatingBadgeEmoji}>✓</Text>
+                <Text style={styles.floatingBadgeText}>Instant</Text>
               </Animated.View>
             </Animated.View>
+          </View>
+        </View>
+      </View>
+
+      {/* ==================== WHAT WE DO - 3 CRISP LINES ==================== */}
+      <View style={styles.whatWeDoSection}>
+        <Animated.View entering={FadeInUp.delay(100).duration(800)} style={styles.whatWeDoContent}>
+          <Text style={styles.sectionLabel}>WHAT WE DO</Text>
+          
+          <Animated.Text entering={FadeInUp.delay(200).duration(800)} style={styles.whatWeDoLine}>
+            Compare every UK energy supplier in seconds.
+          </Animated.Text>
+          <Animated.Text entering={FadeInUp.delay(400).duration(800)} style={styles.whatWeDoLine}>
+            See exactly how much you'll save—no hidden fees.
+          </Animated.Text>
+          <Animated.Text entering={FadeInUp.delay(600).duration(800)} style={styles.whatWeDoLine}>
+            Switch without paperwork. We handle everything.
+          </Animated.Text>
+        </Animated.View>
+      </View>
+
+      {/* ==================== HOW WE HELP - HAYYAN SLIDES IN ==================== */}
+      <View style={styles.howWeHelpSection}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F9F7FF', '#FFFFFF']}
+          style={StyleSheet.absoluteFill}
+        />
+        
+        <View style={styles.howWeHelpContent}>
+          {/* Hayyan Character - Slides from left, pulses */}
+          <Animated.View style={[styles.hayyanContainer, hayyanAnimatedStyle]}>
+            <View style={styles.hayyanCircle}>
+              <Text style={styles.hayyanEmoji}>👋</Text>
+            </View>
+            <View style={styles.hayyanSpeechBubble}>
+              <Text style={styles.hayyanSpeech}>Hey! I'm Hayyan. Let me help you save money! ⚡</Text>
+            </View>
+          </Animated.View>
+          
+          {/* Text Content */}
+          <Animated.View entering={FadeInRight.delay(600).duration(800)} style={styles.howWeHelpText}>
+            <Text style={styles.sectionLabel}>HOW WE HELP</Text>
+            <Text style={styles.howWeHelpTitle}>Your Personal Energy Savings Assistant</Text>
+            <Text style={styles.howWeHelpDesc}>
+              Hayyan guides you through comparing suppliers, understanding your bills, and switching to better deals—all in under 2 minutes.
+            </Text>
+            
+            <View style={styles.helpFeatures}>
+              <View style={styles.helpFeature}>
+                <View style={styles.helpFeatureIcon}>
+                  <Ionicons name="flash" size={24} color={COLORS.primary} />
+                </View>
+                <Text style={styles.helpFeatureText}>Instant comparisons</Text>
+              </View>
+              <View style={styles.helpFeature}>
+                <View style={styles.helpFeatureIcon}>
+                  <Ionicons name="shield-checkmark" size={24} color={COLORS.primary} />
+                </View>
+                <Text style={styles.helpFeatureText}>100% safe switching</Text>
+              </View>
+              <View style={styles.helpFeature}>
+                <View style={styles.helpFeatureIcon}>
+                  <Ionicons name="wallet" size={24} color={COLORS.primary} />
+                </View>
+                <Text style={styles.helpFeatureText}>No hidden fees</Text>
+              </View>
+            </View>
           </Animated.View>
         </View>
       </View>
 
-      {/* TRUSTED BY - Animated Logos */}
-      <Animated.View entering={FadeInUp.delay(200).duration(800)} style={styles.trustedSection}>
-        <Text style={styles.trustedTitle}>AS SEEN IN</Text>
-        <View style={styles.trustedLogos}>
-          {['BBC', 'The Guardian', 'Telegraph', 'Forbes', 'TechCrunch', 'Wired'].map((logo, index) => (
-            <Animated.View 
-              key={logo} 
-              entering={FadeIn.delay(300 + index * 100).duration(600)}
-              style={styles.trustedLogo}
-            >
-              <Text style={styles.trustedLogoText}>{logo}</Text>
-            </Animated.View>
-          ))}
-        </View>
-      </Animated.View>
-
-      {/* HOW IT WORKS - Animated Steps */}
-      <View style={styles.howSection}>
-        <Animated.View entering={FadeInDown.duration(600)} style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>HOW IT WORKS</Text>
-          <Text style={styles.sectionTitle}>Save Money in 4 Simple Steps</Text>
-        </Animated.View>
-
-        <View style={styles.stepsContainer}>
-          {howItWorks.map((item, index) => (
-            <Animated.View
-              key={item.step}
-              entering={SlideInUp.delay(200 + index * 150).duration(600).springify()}
-              style={styles.stepCard}
-            >
-              <View style={[styles.stepIcon, { backgroundColor: `${COLORS.primary}15` }]}>
-                <Ionicons name={item.icon as any} size={32} color={COLORS.primary} />
-              </View>
-              <Text style={styles.stepNumber}>{item.step}</Text>
-              <Text style={styles.stepTitle}>{item.title}</Text>
-              <Text style={styles.stepDesc}>{item.desc}</Text>
-            </Animated.View>
-          ))}
-        </View>
-
-        {/* CTA */}
-        <Animated.View entering={FadeInUp.delay(800).duration(600)} style={styles.sectionCta}>
-          <TouchableOpacity style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Download Free App</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-
-      {/* FEATURES - Cards with Hover Effects */}
-      <View style={styles.featuresSection}>
-        <LinearGradient
-          colors={['#FFFFFF', '#F9FAFB', '#FFFFFF']}
-          style={StyleSheet.absoluteFill}
-        />
-        
-        <Animated.View entering={FadeInDown.duration(600)} style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>WHY HAYYAN</Text>
-          <Text style={styles.sectionTitle}>Everything You Need to Save</Text>
-          <Text style={styles.sectionSubtitle}>
-            We've built the simplest way for UK businesses to compare and switch energy suppliers.
-          </Text>
-        </Animated.View>
-
-        <View style={styles.featuresGrid}>
-          {features.map((feature, index) => (
-            <Animated.View
-              key={feature.title}
-              entering={SlideInUp.delay(300 + index * 100).duration(600).springify()}
-              style={styles.featureCard}
-            >
-              <View style={[styles.featureIcon, { backgroundColor: `${feature.color}15` }]}>
-                <Ionicons name={feature.icon as any} size={32} color={feature.color} />
-              </View>
-              <Text style={styles.featureTitle}>{feature.title}</Text>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
-            </Animated.View>
-          ))}
-        </View>
-
-        {/* CTA */}
-        <Animated.View entering={FadeInUp.delay(700).duration(600)} style={styles.sectionCta}>
-          <AppStoreButtons variant="light" />
-        </Animated.View>
-      </View>
-
-      {/* STATS - Big Numbers */}
+      {/* ==================== STATS - ZOOM ON HOVER, NUMBERS SPIN ==================== */}
       <View style={styles.statsSection}>
         <LinearGradient
           colors={[COLORS.primary, '#9D85F6', '#B8A4F8']}
@@ -410,75 +438,118 @@ export default function WebsiteHomePage() {
           end={{ x: 1, y: 1 }}
         />
         
-        <View style={styles.statsContent}>
+        <Text style={styles.statsTitle}>Trusted by thousands of UK businesses</Text>
+        
+        <View style={styles.statsGrid}>
           {stats.map((stat, index) => (
             <Animated.View
               key={stat.label}
-              entering={SlideInUp.delay(index * 150).duration(600).springify()}
-              style={styles.statItem}
+              entering={ZoomIn.delay(200 + index * 150).duration(600)}
+              style={styles.statCard}
             >
               <Text style={styles.statIcon}>{stat.icon}</Text>
-              <Text style={styles.statValue}>{stat.value}</Text>
+              <View style={styles.statValueContainer}>
+                {stat.decimal ? (
+                  <Text style={styles.statValue}>4.9{stat.suffix}</Text>
+                ) : (
+                  <>
+                    {stat.prefix && <Text style={styles.statValue}>{stat.prefix}</Text>}
+                    <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                  </>
+                )}
+              </View>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </Animated.View>
           ))}
         </View>
       </View>
 
-      {/* TESTIMONIALS */}
-      <View style={styles.testimonialsSection}>
-        <Animated.View entering={FadeInDown.duration(600)} style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>TESTIMONIALS</Text>
-          <Text style={styles.sectionTitle}>Loved by Business Owners</Text>
-        </Animated.View>
-
-        <View style={styles.testimonialsGrid}>
-          {testimonials.map((testimonial, index) => (
-            <Animated.View
-              key={index}
-              entering={SlideInUp.delay(200 + index * 150).duration(600).springify()}
-              style={styles.testimonialCard}
-            >
-              <View style={styles.testimonialStars}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons key={star} name="star" size={18} color="#FFD700" />
-                ))}
+      {/* ==================== DASHBOARD SECTION - PHONE IN HAND ==================== */}
+      <View style={styles.dashboardSection}>
+        <View style={styles.dashboardContent}>
+          {/* Left - Text */}
+          <Animated.View entering={FadeInLeft.delay(200).duration(800)} style={styles.dashboardText}>
+            <Text style={styles.sectionLabel}>YOUR DASHBOARD</Text>
+            <Text style={styles.dashboardTitle}>Track Your Savings in Real-Time</Text>
+            <Text style={styles.dashboardDesc}>
+              See exactly how much you're saving every month. Get personalized tips to reduce your bills even further. All from one beautiful dashboard.
+            </Text>
+            
+            <View style={styles.dashboardFeatures}>
+              <View style={styles.dashFeature}>
+                <Ionicons name="trending-down" size={24} color="#4CAF50" />
+                <Text style={styles.dashFeatureText}>Live savings tracker</Text>
               </View>
-              <Text style={styles.testimonialQuote}>"{testimonial.quote}"</Text>
-              <View style={styles.testimonialAuthor}>
-                <Text style={styles.testimonialAvatar}>{testimonial.avatar}</Text>
-                <View>
-                  <Text style={styles.testimonialName}>{testimonial.author}</Text>
-                  <Text style={styles.testimonialBusiness}>{testimonial.business}</Text>
+              <View style={styles.dashFeature}>
+                <Ionicons name="notifications" size={24} color="#FF9800" />
+                <Text style={styles.dashFeatureText}>Better deal alerts</Text>
+              </View>
+              <View style={styles.dashFeature}>
+                <Ionicons name="bar-chart" size={24} color="#2196F3" />
+                <Text style={styles.dashFeatureText}>Usage insights</Text>
+              </View>
+            </View>
+            
+            {/* CTA */}
+            <TouchableOpacity style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Download Free</Text>
+              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </Animated.View>
+          
+          {/* Right - Phone in Hand sliding in */}
+          <Animated.View style={[styles.handPhoneContainer, handPhoneStyle]}>
+            <View style={styles.handPhoneMockup}>
+              <View style={styles.handPhoneScreen}>
+                {/* Dashboard Screen */}
+                <View style={styles.dashScreenHeader}>
+                  <Text style={styles.dashScreenTitle}>Hi, Sarah! 👋</Text>
+                </View>
+                <View style={styles.dashSavingsCard}>
+                  <Text style={styles.dashSavingsLabel}>Your Savings</Text>
+                  <Text style={styles.dashSavingsValue}>£432</Text>
+                  <Text style={styles.dashSavingsPeriod}>This Year</Text>
+                </View>
+                <View style={styles.dashTip}>
+                  <Text style={styles.dashTipEmoji}>💡</Text>
+                  <Text style={styles.dashTipText}>Switch heating off-peak to save £50 more!</Text>
                 </View>
               </View>
-            </Animated.View>
-          ))}
+            </View>
+            {/* Hand silhouette effect */}
+            <View style={styles.handSilhouette} />
+          </Animated.View>
         </View>
-
-        {/* CTA */}
-        <Animated.View entering={FadeInUp.delay(600).duration(600)} style={styles.sectionCta}>
-          <TouchableOpacity style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Join 10,000+ Businesses</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </Animated.View>
       </View>
 
-      {/* FINAL CTA - Big & Bold */}
+      {/* ==================== FINAL CTA ==================== */}
       <View style={styles.finalCtaSection}>
         <LinearGradient
-          colors={['#1A1A2E', '#2D2D44', '#1A1A2E']}
+          colors={['#1A1A2E', '#2D2D44']}
           style={styles.finalCtaGradient}
         >
-          <Animated.View entering={SlideInUp.duration(800).springify()}>
+          <Animated.View entering={FadeInUp.duration(800)}>
             <Text style={styles.finalCtaEmoji}>⚡</Text>
             <Text style={styles.finalCtaTitle}>Start Saving Today</Text>
             <Text style={styles.finalCtaSubtitle}>
-              Download Hayyan free and find out how much you could save on your business energy bills.
+              Join 10,000+ UK businesses already saving with Hayyan
             </Text>
+            
             <View style={styles.finalCtaButtons}>
-              <AppStoreButtons delay={200} />
+              <TouchableOpacity style={styles.finalCtaAppButton}>
+                <Ionicons name="logo-apple" size={24} color="#FFFFFF" />
+                <View>
+                  <Text style={styles.finalCtaAppLabel}>Download on</Text>
+                  <Text style={styles.finalCtaAppStore}>App Store</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.finalCtaAppButton}>
+                <Ionicons name="logo-google-playstore" size={24} color="#FFFFFF" />
+                <View>
+                  <Text style={styles.finalCtaAppLabel}>Get it on</Text>
+                  <Text style={styles.finalCtaAppStore}>Google Play</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </Animated.View>
         </LinearGradient>
@@ -496,67 +567,91 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   
-  // HERO SECTION
+  // ========== HERO ==========
   heroSection: {
     minHeight: isDesktop ? height * 0.95 : 'auto',
-    paddingTop: 100,
-    paddingBottom: 60,
+    paddingTop: 120,
+    paddingBottom: 80,
     position: 'relative',
     overflow: 'hidden',
   },
   heroContent: {
     maxWidth: 1400,
     marginHorizontal: 'auto',
-    paddingHorizontal: 40,
+    paddingHorizontal: isDesktop ? 60 : 24,
     flexDirection: isDesktop ? 'row' : 'column',
     alignItems: 'center',
     width: '100%',
   },
-  heroText: {
+  heroLeft: {
     flex: 1,
-    paddingRight: isDesktop ? 60 : 0,
-    alignItems: isDesktop ? 'flex-start' : 'center',
+    paddingRight: isDesktop ? 40 : 0,
     zIndex: 10,
   },
-  badge: {
+  heroBadge: {
     backgroundColor: 'rgba(123, 92, 246, 0.1)',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 100,
+    alignSelf: 'flex-start',
     marginBottom: 32,
     borderWidth: 1,
     borderColor: 'rgba(123, 92, 246, 0.2)',
   },
-  badgeText: {
+  heroBadgeText: {
     color: COLORS.primary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   heroTitle: {
-    fontSize: isDesktop ? 72 : 42,
+    fontSize: isDesktop ? 64 : 36,
     fontWeight: '800',
     color: '#1A1A2E',
+    lineHeight: isDesktop ? 76 : 44,
     marginBottom: 24,
-    lineHeight: isDesktop ? 82 : 50,
-    textAlign: isDesktop ? 'left' : 'center',
-  },
-  heroTitleHighlight: {
-    color: COLORS.primary,
   },
   heroSubtitle: {
-    fontSize: isDesktop ? 22 : 18,
+    fontSize: isDesktop ? 20 : 16,
     color: '#6B7280',
+    lineHeight: isDesktop ? 32 : 26,
     marginBottom: 40,
-    lineHeight: isDesktop ? 34 : 28,
-    textAlign: isDesktop ? 'left' : 'center',
-    maxWidth: 500,
+    maxWidth: 520,
   },
-  heroTrust: {
+  appButtonsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  appStoreButton: {
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  appButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1A1A2E',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 14,
+    gap: 12,
+  },
+  appButtonLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+  },
+  appButtonStore: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  trustBadges: {
+    flexDirection: 'row',
+    gap: 24,
     marginTop: 40,
     flexWrap: 'wrap',
-    gap: 16,
   },
   trustItem: {
     flexDirection: 'row',
@@ -568,68 +663,124 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '500',
   },
-  trustDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: '#E5E7EB',
-  },
   
-  // Phone Mockup - BIG
-  heroPhoneContainer: {
-    flex: isDesktop ? 1.2 : undefined,
+  // Phone Mockup
+  heroRight: {
+    flex: isDesktop ? 1.1 : undefined,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: isDesktop ? 0 : 60,
     position: 'relative',
+    minHeight: isDesktop ? 600 : 500,
   },
-  phoneGlow: {
+  phoneGlowEffect: {
     position: 'absolute',
-    width: 400,
-    height: 400,
-    borderRadius: 200,
+    width: 350,
+    height: 350,
+    borderRadius: 175,
     backgroundColor: COLORS.primary,
   },
-  phoneMockupLarge: {
+  phoneContainer: {
     position: 'relative',
-    zIndex: 10,
   },
-  phoneFrame: {
-    width: isDesktop ? 320 : 280,
-    height: isDesktop ? 650 : 570,
+  phoneMockup: {
+    width: isDesktop ? 300 : 260,
+    height: isDesktop ? 620 : 540,
     backgroundColor: '#1A1A2E',
-    borderRadius: 50,
-    padding: 12,
+    borderRadius: 45,
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 30 },
-    shadowOpacity: 0.4,
-    shadowRadius: 60,
+    shadowOpacity: 0.5,
+    shadowRadius: 50,
     elevation: 30,
   },
   phoneNotch: {
-    width: 120,
-    height: 28,
+    width: 100,
+    height: 24,
     backgroundColor: '#1A1A2E',
-    borderRadius: 20,
+    borderRadius: 12,
     alignSelf: 'center',
+    marginTop: 4,
     marginBottom: 8,
-    zIndex: 100,
   },
   phoneScreen: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 38,
+    borderRadius: 35,
+    padding: 16,
     overflow: 'hidden',
   },
-  appScreenshot: {
-    width: '100%',
-    height: '100%',
+  screenHeader: {
+    marginBottom: 16,
+  },
+  screenTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1A1A2E',
+  },
+  supplierCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  supplierCardAlt: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    backgroundColor: '#F5F0FF',
+  },
+  supplierTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  supplierEmoji: {
+    fontSize: 28,
+  },
+  supplierName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A2E',
+  },
+  savingsBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginTop: 2,
+  },
+  savingsText: {
+    fontSize: 11,
+    color: '#4CAF50',
+    fontWeight: '700',
+  },
+  savingsAmount: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '700',
+  },
+  viewDealBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  viewDealText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   
-  // Floating Cards
-  floatingCard: {
+  // Floating badges
+  floatingBadge: {
     position: 'absolute',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -637,25 +788,21 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 24,
+    shadowRadius: 20,
     elevation: 10,
   },
-  floatingCard1: {
-    top: 80,
-    left: -80,
-  },
-  floatingCard2: {
-    top: 200,
-    right: -70,
-  },
-  floatingCard3: {
-    bottom: 150,
+  badge1: {
+    top: 100,
     left: -60,
   },
-  floatingEmoji: {
-    fontSize: 20,
+  badge2: {
+    bottom: 150,
+    right: -50,
   },
-  floatingText: {
+  floatingBadgeEmoji: {
+    fontSize: 18,
+  },
+  floatingBadgeText: {
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.primary,
@@ -664,302 +811,332 @@ const styles = StyleSheet.create({
   // Particles
   particle: {
     position: 'absolute',
-    opacity: 0.6,
+    opacity: 0.5,
   },
-  particle1: { top: '15%', left: '5%' },
-  particle2: { top: '25%', right: '8%' },
-  particle3: { top: '45%', left: '10%' },
-  particle4: { bottom: '25%', right: '5%' },
-  particle5: { bottom: '35%', left: '3%' },
   particleEmoji: {
-    fontSize: 32,
+    fontSize: 36,
   },
   
-  // Trusted Section
-  trustedSection: {
-    paddingVertical: 50,
+  // ========== WHAT WE DO ==========
+  whatWeDoSection: {
+    paddingVertical: 100,
     paddingHorizontal: 24,
     backgroundColor: '#FAFAFA',
+  },
+  whatWeDoContent: {
+    maxWidth: 800,
+    marginHorizontal: 'auto',
     alignItems: 'center',
-  },
-  trustedTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#9CA3AF',
-    letterSpacing: 3,
-    marginBottom: 30,
-  },
-  trustedLogos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 48,
-  },
-  trustedLogo: {
-    opacity: 0.4,
-  },
-  trustedLogoText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#374151',
-  },
-  
-  // Section Styles
-  sectionHeader: {
-    alignItems: 'center',
-    marginBottom: 60,
-    paddingHorizontal: 24,
   },
   sectionLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.primary,
     letterSpacing: 3,
-    marginBottom: 16,
+    marginBottom: 32,
   },
-  sectionTitle: {
-    fontSize: isDesktop ? 48 : 32,
+  whatWeDoLine: {
+    fontSize: isDesktop ? 28 : 20,
+    fontWeight: '600',
+    color: '#1A1A2E',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: isDesktop ? 40 : 30,
+  },
+  
+  // ========== HOW WE HELP ==========
+  howWeHelpSection: {
+    paddingVertical: 100,
+    position: 'relative',
+  },
+  howWeHelpContent: {
+    maxWidth: 1200,
+    marginHorizontal: 'auto',
+    paddingHorizontal: 24,
+    flexDirection: isDesktop ? 'row' : 'column',
+    alignItems: 'center',
+    gap: 60,
+  },
+  hayyanContainer: {
+    alignItems: 'center',
+  },
+  hayyanCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: '#F0EBFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 4,
+    borderColor: COLORS.primary,
+  },
+  hayyanEmoji: {
+    fontSize: 80,
+  },
+  hayyanSpeechBubble: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 20,
+    maxWidth: 260,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  hayyanSpeech: {
+    fontSize: 15,
+    color: '#374151',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  howWeHelpText: {
+    flex: 1,
+  },
+  howWeHelpTitle: {
+    fontSize: isDesktop ? 40 : 28,
     fontWeight: '800',
     color: '#1A1A2E',
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 20,
   },
-  sectionSubtitle: {
+  howWeHelpDesc: {
     fontSize: 18,
     color: '#6B7280',
-    textAlign: 'center',
-    maxWidth: 600,
-    lineHeight: 28,
+    lineHeight: 30,
+    marginBottom: 32,
   },
-  sectionCta: {
+  helpFeatures: {
+    gap: 16,
+  },
+  helpFeature: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 48,
+    gap: 14,
   },
-  primaryButton: {
+  helpFeatureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0EBFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  helpFeatureText: {
+    fontSize: 17,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  
+  // ========== STATS ==========
+  statsSection: {
+    paddingVertical: 80,
+    position: 'relative',
+  },
+  statsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    marginBottom: 48,
+    letterSpacing: 1,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 32,
+    paddingHorizontal: 24,
+  },
+  statCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    minWidth: 200,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  statIcon: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  statValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  statValue: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  statLabel: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 8,
+  },
+  
+  // ========== DASHBOARD SECTION ==========
+  dashboardSection: {
+    paddingVertical: 100,
+    paddingHorizontal: 24,
+    backgroundColor: '#FAFAFA',
+    overflow: 'hidden',
+  },
+  dashboardContent: {
+    maxWidth: 1200,
+    marginHorizontal: 'auto',
+    flexDirection: isDesktop ? 'row' : 'column',
+    alignItems: 'center',
+    gap: 60,
+  },
+  dashboardText: {
+    flex: 1,
+  },
+  dashboardTitle: {
+    fontSize: isDesktop ? 40 : 28,
+    fontWeight: '800',
+    color: '#1A1A2E',
+    marginBottom: 20,
+  },
+  dashboardDesc: {
+    fontSize: 18,
+    color: '#6B7280',
+    lineHeight: 30,
+    marginBottom: 32,
+  },
+  dashboardFeatures: {
+    gap: 16,
+    marginBottom: 32,
+  },
+  dashFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  dashFeatureText: {
+    fontSize: 17,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  ctaButton: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 32,
     paddingVertical: 18,
-    borderRadius: 100,
+    borderRadius: 14,
     gap: 12,
+    alignSelf: 'flex-start',
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
   },
-  primaryButtonText: {
+  ctaButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
   },
-  
-  // How Section
-  howSection: {
-    paddingVertical: 100,
-    paddingHorizontal: 24,
+  handPhoneContainer: {
+    position: 'relative',
   },
-  stepsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 32,
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-  },
-  stepCard: {
-    width: isDesktop ? 260 : '45%',
-    alignItems: 'center',
-    padding: 24,
-  },
-  stepIcon: {
-    width: 80,
-    height: 80,
+  handPhoneMockup: {
+    width: 280,
+    height: 500,
+    backgroundColor: '#1A1A2E',
     borderRadius: 40,
-    justifyContent: 'center',
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: -10, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 40,
+    elevation: 20,
+  },
+  handPhoneScreen: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
+    padding: 20,
+  },
+  dashScreenHeader: {
+    marginBottom: 20,
+  },
+  dashScreenTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A1A2E',
+  },
+  dashSavingsCard: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
     marginBottom: 16,
   },
-  stepNumber: {
+  dashSavingsLabel: {
     fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.primary,
-    marginBottom: 8,
+    color: 'rgba(255,255,255,0.8)',
   },
-  stepTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A2E',
-    marginBottom: 8,
-  },
-  stepDesc: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  
-  // Features
-  featuresSection: {
-    paddingVertical: 100,
-    position: 'relative',
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 24,
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-    paddingHorizontal: 24,
-  },
-  featureCard: {
-    width: isDesktop ? '23%' : '45%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 32,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  featureIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  featureTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A2E',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  featureDescription: {
-    fontSize: 15,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  
-  // Stats
-  statsSection: {
-    paddingVertical: 80,
-    position: 'relative',
-  },
-  statsContent: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    maxWidth: 1100,
-    marginHorizontal: 'auto',
-    paddingHorizontal: 24,
-  },
-  statItem: {
-    alignItems: 'center',
-    minWidth: 200,
-    marginVertical: 24,
-  },
-  statIcon: {
-    fontSize: 40,
-    marginBottom: 12,
-  },
-  statValue: {
+  dashSavingsValue: {
     fontSize: 48,
     fontWeight: '800',
     color: '#FFFFFF',
   },
-  statLabel: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 8,
-    fontWeight: '500',
-  },
-  
-  // Testimonials
-  testimonialsSection: {
-    paddingVertical: 100,
-    paddingHorizontal: 24,
-    backgroundColor: '#FAFAFA',
-  },
-  testimonialsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 24,
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-  },
-  testimonialCard: {
-    width: isDesktop ? '30%' : '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  testimonialStars: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    gap: 4,
-  },
-  testimonialQuote: {
-    fontSize: 17,
-    color: '#374151',
-    lineHeight: 28,
-    marginBottom: 24,
-    fontStyle: 'italic',
-  },
-  testimonialAuthor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  testimonialAvatar: {
-    fontSize: 36,
-  },
-  testimonialName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1A1A2E',
-  },
-  testimonialBusiness: {
+  dashSavingsPeriod: {
     fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  dashTip: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF9E6',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+    alignItems: 'center',
+  },
+  dashTipEmoji: {
+    fontSize: 24,
+  },
+  dashTipText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#92400E',
+    lineHeight: 20,
+  },
+  handSilhouette: {
+    position: 'absolute',
+    bottom: -40,
+    right: -30,
+    width: 120,
+    height: 180,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 20,
+    transform: [{ rotate: '-15deg' }],
   },
   
-  // Final CTA
+  // ========== FINAL CTA ==========
   finalCtaSection: {
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 60,
   },
   finalCtaGradient: {
     borderRadius: 32,
     padding: 80,
     alignItems: 'center',
-    maxWidth: 1000,
+    maxWidth: 900,
     marginHorizontal: 'auto',
   },
   finalCtaEmoji: {
-    fontSize: 72,
+    fontSize: 64,
     textAlign: 'center',
     marginBottom: 24,
   },
   finalCtaTitle: {
-    fontSize: isDesktop ? 48 : 32,
+    fontSize: isDesktop ? 44 : 32,
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -970,10 +1147,31 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     marginBottom: 40,
-    maxWidth: 500,
-    lineHeight: 28,
   },
   finalCtaButtons: {
+    flexDirection: 'row',
+    gap: 16,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  finalCtaAppButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 14,
+    gap: 12,
+  },
+  finalCtaAppLabel: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  finalCtaAppStore: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
