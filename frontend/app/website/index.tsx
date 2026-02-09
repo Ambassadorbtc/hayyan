@@ -294,57 +294,17 @@ export default function WebsiteHomePage() {
             {/* Glow Effect Behind Phone */}
             <Animated.View style={[styles.phoneGlowEffect, glowAnimatedStyle]} />
             
-            {/* Phone Mockup - Slides in at angle */}
+            {/* Phone Mockup with ACTUAL Screenshot - Slides in at angle */}
             <Animated.View style={[styles.phoneContainer, phoneAnimatedStyle]}>
               <View style={styles.phoneMockup}>
                 <View style={styles.phoneNotch} />
-                <View style={styles.phoneScreen}>
-                  {/* Comparison Screen Content */}
-                  <View style={styles.screenHeader}>
-                    <Text style={styles.screenTitle}>Compare Deals</Text>
-                  </View>
-                  
-                  <View style={styles.supplierCard}>
-                    <View style={styles.supplierTop}>
-                      <Text style={styles.supplierEmoji}>🐙</Text>
-                      <View>
-                        <Text style={styles.supplierName}>Octopus Energy</Text>
-                        <View style={styles.savingsBadge}>
-                          <Text style={styles.savingsText}>Save 18%</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Text style={styles.savingsAmount}>£432/year savings</Text>
-                    <TouchableOpacity style={styles.viewDealBtn}>
-                      <Text style={styles.viewDealText}>View Deal →</Text>
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <View style={[styles.supplierCard, styles.supplierCardAlt]}>
-                    <View style={styles.supplierTop}>
-                      <Text style={styles.supplierEmoji}>🔥</Text>
-                      <View>
-                        <Text style={styles.supplierName}>British Gas</Text>
-                        <View style={styles.savingsBadge}>
-                          <Text style={styles.savingsText}>Save 15%</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Text style={styles.savingsAmount}>£360/year savings</Text>
-                  </View>
-                  
-                  <View style={styles.supplierCard}>
-                    <View style={styles.supplierTop}>
-                      <Text style={styles.supplierEmoji}>⚡</Text>
-                      <View>
-                        <Text style={styles.supplierName}>EDF Energy</Text>
-                        <View style={styles.savingsBadge}>
-                          <Text style={styles.savingsText}>Save 12%</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Text style={styles.savingsAmount}>£288/year savings</Text>
-                  </View>
+                <View style={styles.phoneScreenImage}>
+                  {/* Actual App Screenshot */}
+                  <Image 
+                    source={require('../../assets/images/compare-deals.png')}
+                    style={styles.appScreenshot}
+                    resizeMode="cover"
+                  />
                 </View>
               </View>
               
