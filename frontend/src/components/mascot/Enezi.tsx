@@ -5,10 +5,7 @@ import Svg, {
   Circle,
   Ellipse,
   G,
-  Defs,
-  LinearGradient,
-  Stop,
-  RadialGradient,
+  Rect,
 } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
@@ -16,7 +13,6 @@ import Animated, {
   withRepeat,
   withTiming,
   withSequence,
-  withSpring,
   Easing,
 } from 'react-native-reanimated';
 
@@ -44,8 +40,8 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 
 /**
  * Enezi - The Enerzo Mascot
- * A cute, friendly lightning bolt character inspired by Phantom's ghost and Duolingo's owl
- * Clean, minimalist design with expressive eyes and smooth animations
+ * Retro cartoon style with bold outlines, big eyes, wide smile
+ * Inspired by classic rubber hose animation style
  */
 export const Enezi: React.FC<EneziProps> = ({
   size = 150,
@@ -57,21 +53,21 @@ export const Enezi: React.FC<EneziProps> = ({
 
   useEffect(() => {
     if (animated) {
-      // Gentle floating animation
+      // Bouncy animation
       bounce.value = withRepeat(
         withSequence(
-          withTiming(-4, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) })
+          withTiming(-5, { duration: 400, easing: Easing.out(Easing.quad) }),
+          withTiming(0, { duration: 400, easing: Easing.in(Easing.quad) })
         ),
         -1,
         true
       );
 
-      // Subtle sway
+      // Slight sway
       rotate.value = withRepeat(
         withSequence(
-          withTiming(2, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-          withTiming(-2, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+          withTiming(3, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+          withTiming(-3, { duration: 600, easing: Easing.inOut(Easing.ease) })
         ),
         -1,
         true
@@ -86,306 +82,389 @@ export const Enezi: React.FC<EneziProps> = ({
     ],
   }));
 
-  // Eye positions and sizes based on expression
-  const getEyes = () => {
-    switch (expression) {
-      case 'winking':
-      case 'cheeky':
-        return { left: 'open', right: 'wink' };
-      case 'sad':
-        return { left: 'sad', right: 'sad' };
-      case 'surprised':
-        return { left: 'wide', right: 'wide' };
-      case 'thinking':
-        return { left: 'look_up', right: 'look_up' };
-      case 'excited':
-      case 'celebrating':
-      case 'cheering':
-        return { left: 'sparkle', right: 'sparkle' };
-      default:
-        return { left: 'open', right: 'open' };
-    }
-  };
-
-  const getMouthPath = () => {
+  // Get mouth based on expression
+  const getMouth = () => {
     switch (expression) {
       case 'excited':
       case 'cheering':
       case 'celebrating':
-        // Big open smile
-        return "M 38 70 Q 50 82 62 70 Q 50 78 38 70 Z";
+      case 'happy':
+      case 'waving':
+        return 'big_smile'; // Wide open mouth with tongue
       case 'sad':
-        // Frown
-        return "M 40 74 Q 50 68 60 74";
+        return 'frown';
       case 'surprised':
-        // O shape
-        return "M 50 72 m -5 0 a 5 6 0 1 0 10 0 a 5 6 0 1 0 -10 0";
+        return 'o_shape';
       case 'thinking':
-        // Hmm line
-        return "M 44 72 L 56 73";
+        return 'hmm';
       case 'cheeky':
       case 'winking':
-        // Smirk
-        return "M 40 70 Q 50 78 60 68";
+        return 'smirk';
       case 'proud':
-        // Confident smile
-        return "M 38 68 Q 50 80 62 68";
+        return 'smile';
       default:
-        // Happy smile
-        return "M 40 68 Q 50 78 60 68";
+        return 'big_smile';
     }
   };
 
-  const renderEye = (cx: number, cy: number, type: string) => {
+  // Get eye style based on expression
+  const getLeftEye = () => {
+    switch (expression) {
+      case 'winking':
+      case 'cheeky':
+        return 'wink';
+      case 'sad':
+        return 'sad';
+      case 'surprised':
+        return 'wide';
+      case 'thinking':
+        return 'look_side';
+      default:
+        return 'normal';
+    }
+  };
+
+  const getRightEye = () => {
+    switch (expression) {
+      case 'sad':
+        return 'sad';
+      case 'surprised':
+        return 'wide';
+      case 'thinking':
+        return 'look_side';
+      default:
+        return 'normal';
+    }
+  };
+
+  // Render classic cartoon eye
+  const renderEye = (cx: number, cy: number, type: string, isLeft: boolean) => {
     if (type === 'wink') {
-      // Curved closed eye
       return (
         <Path
-          d={`M ${cx - 7} ${cy} Q ${cx} ${cy + 5} ${cx + 7} ${cy}`}
-          stroke="#1A1A2E"
-          strokeWidth="2.5"
+          d={`M ${cx - 8} ${cy - 2} Q ${cx} ${cy + 6} ${cx + 8} ${cy - 2}`}
+          stroke="#000000"
+          strokeWidth="3"
           fill="none"
           strokeLinecap="round"
         />
       );
     }
 
-    if (type === 'sad') {
-      return (
-        <G>
-          <Ellipse cx={cx} cy={cy} rx={8} ry={9} fill="white" />
-          <Circle cx={cx} cy={cy + 2} r={4} fill="#1A1A2E" />
-          <Circle cx={cx + 1} cy={cy} r={1.5} fill="white" />
-          {/* Sad eyebrow */}
-          <Path
-            d={`M ${cx - 8} ${cy - 12} L ${cx + 4} ${cy - 8}`}
-            stroke="#1A1A2E"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </G>
-      );
-    }
-
-    if (type === 'wide') {
-      return (
-        <G>
-          <Ellipse cx={cx} cy={cy} rx={10} ry={12} fill="white" />
-          <Circle cx={cx} cy={cy} r={6} fill="#1A1A2E" />
-          <Circle cx={cx + 2} cy={cy - 2} r={2.5} fill="white" />
-        </G>
-      );
-    }
-
-    if (type === 'look_up') {
-      return (
-        <G>
-          <Ellipse cx={cx} cy={cy} rx={8} ry={9} fill="white" />
-          <Circle cx={cx} cy={cy - 3} r={4} fill="#1A1A2E" />
-          <Circle cx={cx + 1} cy={cy - 5} r={1.5} fill="white" />
-        </G>
-      );
-    }
-
-    if (type === 'sparkle') {
-      return (
-        <G>
-          <Ellipse cx={cx} cy={cy} rx={9} ry={10} fill="white" />
-          <Circle cx={cx} cy={cy} r={5} fill="#1A1A2E" />
-          <Circle cx={cx + 2} cy={cy - 2} r={2} fill="white" />
-          <Circle cx={cx - 2} cy={cy + 2} r={1} fill="white" />
-          {/* Star sparkle */}
-          <Path
-            d={`M ${cx + 10} ${cy - 8} L ${cx + 11} ${cy - 5} L ${cx + 14} ${cy - 6} L ${cx + 12} ${cy - 4} L ${cx + 14} ${cy - 2} L ${cx + 11} ${cy - 3} L ${cx + 10} ${cy} L ${cx + 9} ${cy - 3} L ${cx + 6} ${cy - 2} L ${cx + 8} ${cy - 4} L ${cx + 6} ${cy - 6} L ${cx + 9} ${cy - 5} Z`}
-            fill="#FFD93D"
-          />
-        </G>
-      );
-    }
-
-    // Default open eye
+    // Classic big oval white eye with black pupil
     return (
       <G>
-        <Ellipse cx={cx} cy={cy} rx={8} ry={9} fill="white" />
-        <Circle cx={cx} cy={cy} r={4} fill="#1A1A2E" />
-        <Circle cx={cx + 1.5} cy={cy - 1.5} r={1.5} fill="white" />
+        {/* White of eye */}
+        <Ellipse
+          cx={cx}
+          cy={cy}
+          rx={10}
+          ry={12}
+          fill="white"
+          stroke="#000000"
+          strokeWidth="2.5"
+        />
+        {/* Black pupil */}
+        <Ellipse
+          cx={type === 'look_side' ? (isLeft ? cx - 3 : cx + 3) : cx}
+          cy={type === 'sad' ? cy + 3 : cy}
+          rx={5}
+          ry={6}
+          fill="#000000"
+        />
       </G>
     );
   };
 
-  const eyes = getEyes();
-  const showArmsUp = expression === 'waving' || expression === 'cheering' || expression === 'celebrating';
+  // Render mouth
+  const renderMouth = (type: string) => {
+    switch (type) {
+      case 'big_smile':
+        // Wide open smile with tongue - classic cartoon style
+        return (
+          <G>
+            {/* Mouth opening */}
+            <Path
+              d="M 32 62 Q 50 82 68 62 Q 50 75 32 62 Z"
+              fill="#000000"
+              stroke="#000000"
+              strokeWidth="2.5"
+            />
+            {/* Tongue */}
+            <Ellipse cx={50} cy={70} rx={8} ry={5} fill="#FF6B6B" />
+          </G>
+        );
+      case 'frown':
+        return (
+          <Path
+            d="M 38 70 Q 50 62 62 70"
+            stroke="#000000"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+      case 'o_shape':
+        return (
+          <Ellipse
+            cx={50}
+            cy={68}
+            rx={8}
+            ry={10}
+            fill="#000000"
+            stroke="#000000"
+            strokeWidth="2"
+          />
+        );
+      case 'hmm':
+        return (
+          <Path
+            d="M 42 68 L 58 66"
+            stroke="#000000"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+      case 'smirk':
+        return (
+          <Path
+            d="M 38 65 Q 55 72 65 62"
+            stroke="#000000"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+      case 'smile':
+        return (
+          <Path
+            d="M 38 64 Q 50 74 62 64"
+            stroke="#000000"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const showArmsUp = expression === 'waving' || expression === 'cheering' || expression === 'celebrating' || expression === 'excited';
+  const showPointing = expression === 'pointing';
 
   return (
-    <AnimatedView style={[styles.container, animatedStyle, { width: size, height: size * 1.1 }]}>
-      <Svg width={size} height={size * 1.1} viewBox="0 0 100 110">
-        <Defs>
-          {/* Main body gradient - electric blue like Phantom's style */}
-          <LinearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#00D4FF" />
-            <Stop offset="100%" stopColor="#00A3FF" />
-          </LinearGradient>
-          
-          {/* Lightning hair gradient */}
-          <LinearGradient id="boltGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#FFE566" />
-            <Stop offset="100%" stopColor="#FFD93D" />
-          </LinearGradient>
-          
-          {/* Belly highlight */}
-          <RadialGradient id="bellyGradient" cx="50%" cy="40%" rx="50%" ry="50%">
-            <Stop offset="0%" stopColor="#B8F4FF" stopOpacity="0.8" />
-            <Stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
-          </RadialGradient>
-          
-          {/* Sneaker gradient */}
-          <LinearGradient id="sneakerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#FF6B6B" />
-            <Stop offset="100%" stopColor="#FF4D4D" />
-          </LinearGradient>
-        </Defs>
-
-        {/* Lightning bolt hair - iconic like the brief requested */}
-        <Path
-          d="M 50 5 L 54 15 L 60 10 L 54 22 L 58 18 L 52 28 L 50 20 L 48 28 L 42 18 L 46 22 L 40 10 L 46 15 Z"
-          fill="url(#boltGradient)"
-          stroke="#E6B800"
-          strokeWidth="1"
-        />
-
-        {/* Main body - clean rounded shape like Phantom ghost */}
-        <Path
-          d="M 50 25 
-             C 75 25 80 45 80 60 
-             C 80 80 70 90 50 90 
-             C 30 90 20 80 20 60 
-             C 20 45 25 25 50 25 Z"
-          fill="url(#bodyGradient)"
-        />
+    <AnimatedView style={[styles.container, animatedStyle, { width: size, height: size * 1.15 }]}>
+      <Svg width={size} height={size * 1.15} viewBox="0 0 100 115">
         
-        {/* Belly highlight */}
-        <Ellipse cx={50} cy={55} rx={18} ry={20} fill="url(#bellyGradient)" />
+        {/* === FLAME/SPARK ON TOP === */}
+        <G>
+          <Path
+            d="M 50 8 Q 54 2 52 10 Q 56 6 54 14 Q 50 10 50 16 Q 46 10 46 14 Q 44 6 48 10 Q 46 2 50 8 Z"
+            fill="#FF6B00"
+            stroke="#000000"
+            strokeWidth="2"
+          />
+          <Path
+            d="M 50 10 Q 52 6 51 12 Q 50 8 50 14 Q 48 8 49 12 Q 48 6 50 10 Z"
+            fill="#FFCC00"
+          />
+        </G>
 
-        {/* Arms based on expression */}
+        {/* === MAIN BODY - Yellow energy drop shape === */}
+        <Path
+          d="M 50 18 
+             C 70 18 78 35 78 52 
+             C 78 72 68 82 50 82 
+             C 32 82 22 72 22 52 
+             C 22 35 30 18 50 18 Z"
+          fill="#FFD93D"
+          stroke="#000000"
+          strokeWidth="3"
+        />
+
+        {/* Highlight on body */}
+        <Ellipse cx={36} cy={40} rx={6} ry={8} fill="#FFEC8B" opacity={0.6} />
+
+        {/* === ARMS === */}
         {showArmsUp ? (
           <>
             {/* Left arm up */}
-            <Path
-              d="M 25 55 Q 10 40 15 28"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={15} cy={28} r={5} fill="#00D4FF" />
+            <G>
+              <Path
+                d="M 26 52 Q 14 42 10 32"
+                stroke="#FFD93D"
+                strokeWidth="10"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 26 52 Q 14 42 10 32"
+                stroke="#000000"
+                strokeWidth="12"
+                fill="none"
+                strokeLinecap="round"
+                opacity={0.3}
+              />
+              <Circle cx={10} cy={32} r={6} fill="#FFD93D" stroke="#000000" strokeWidth="2.5" />
+            </G>
             {/* Right arm up */}
-            <Path
-              d="M 75 55 Q 90 40 85 28"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={85} cy={28} r={5} fill="#00D4FF" />
+            <G>
+              <Path
+                d="M 74 52 Q 86 42 90 32"
+                stroke="#FFD93D"
+                strokeWidth="10"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 74 52 Q 86 42 90 32"
+                stroke="#000000"
+                strokeWidth="12"
+                fill="none"
+                strokeLinecap="round"
+                opacity={0.3}
+              />
+              <Circle cx={90} cy={32} r={6} fill="#FFD93D" stroke="#000000" strokeWidth="2.5" />
+            </G>
           </>
-        ) : expression === 'pointing' ? (
+        ) : showPointing ? (
           <>
-            {/* Left arm relaxed */}
-            <Path
-              d="M 25 55 Q 12 60 10 65"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={10} cy={65} r={4} fill="#00D4FF" />
+            {/* Left arm at side */}
+            <G>
+              <Path
+                d="M 26 55 Q 16 58 12 62"
+                stroke="#FFD93D"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Circle cx={12} cy={62} r={5} fill="#FFD93D" stroke="#000000" strokeWidth="2" />
+            </G>
             {/* Right arm pointing */}
-            <Path
-              d="M 75 50 Q 92 45 98 42"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={98} cy={42} r={4} fill="#00D4FF" />
+            <G>
+              <Path
+                d="M 74 50 Q 88 45 96 42"
+                stroke="#FFD93D"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Circle cx={96} cy={42} r={5} fill="#FFD93D" stroke="#000000" strokeWidth="2" />
+            </G>
           </>
         ) : (
           <>
-            {/* Arms at sides */}
-            <Path
-              d="M 25 55 Q 12 60 10 68"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={10} cy={68} r={4} fill="#00D4FF" />
-            <Path
-              d="M 75 55 Q 88 60 90 68"
-              stroke="url(#bodyGradient)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Circle cx={90} cy={68} r={4} fill="#00D4FF" />
+            {/* Arms at sides - curly style */}
+            <G>
+              <Path
+                d="M 26 55 Q 16 58 14 65 Q 12 70 16 72"
+                stroke="#FFD93D"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Circle cx={16} cy={72} r={5} fill="#FFD93D" stroke="#000000" strokeWidth="2" />
+            </G>
+            <G>
+              <Path
+                d="M 74 55 Q 84 58 86 65 Q 88 70 84 72"
+                stroke="#FFD93D"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <Circle cx={84} cy={72} r={5} fill="#FFD93D" stroke="#000000" strokeWidth="2" />
+            </G>
           </>
         )}
 
-        {/* Face - eyes */}
-        {renderEye(40, 52, eyes.left)}
-        {renderEye(60, 52, eyes.right)}
+        {/* === EYEBROWS === */}
+        {expression === 'sad' && (
+          <>
+            <Path d="M 32 38 L 44 42" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
+            <Path d="M 68 38 L 56 42" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
+          </>
+        )}
+        {(expression === 'excited' || expression === 'celebrating') && (
+          <>
+            <Path d="M 32 40 Q 38 36 44 40" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <Path d="M 56 40 Q 62 36 68 40" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          </>
+        )}
 
-        {/* Blush */}
-        <Ellipse cx={28} cy={58} rx={5} ry={3} fill="#FFB6C1" opacity={0.5} />
-        <Ellipse cx={72} cy={58} rx={5} ry={3} fill="#FFB6C1" opacity={0.5} />
+        {/* === EYES === */}
+        {renderEye(40, 50, getLeftEye(), true)}
+        {renderEye(60, 50, getRightEye(), false)}
 
-        {/* Mouth */}
+        {/* === BLUSH MARKS - Red circles on cheeks === */}
+        <Circle cx={28} cy={58} r={5} fill="#FF6B6B" opacity={0.7} />
+        <Circle cx={72} cy={58} r={5} fill="#FF6B6B" opacity={0.7} />
+
+        {/* === MOUTH === */}
+        {renderMouth(getMouth())}
+
+        {/* === LEGS === */}
+        {/* Left leg */}
         <Path
-          d={getMouthPath()}
-          stroke="#1A1A2E"
-          strokeWidth="2.5"
-          fill={expression === 'excited' || expression === 'cheering' || expression === 'celebrating' ? '#FF6B6B' : 'none'}
+          d="M 40 80 L 40 90"
+          stroke="#FFD93D"
+          strokeWidth="8"
           strokeLinecap="round"
         />
+        <Path
+          d="M 40 80 L 40 90"
+          stroke="#000000"
+          strokeWidth="10"
+          strokeLinecap="round"
+          opacity={0.2}
+        />
+        
+        {/* Right leg */}
+        <Path
+          d="M 60 80 L 60 90"
+          stroke="#FFD93D"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <Path
+          d="M 60 80 L 60 90"
+          stroke="#000000"
+          strokeWidth="10"
+          strokeLinecap="round"
+          opacity={0.2}
+        />
 
-        {/* Red sneakers */}
+        {/* === RED SNEAKERS === */}
         {/* Left sneaker */}
         <G>
           <Path
-            d="M 35 88 L 35 96 Q 35 100 39 100 L 48 100 Q 52 100 52 96 L 52 92 L 35 88 Z"
-            fill="url(#sneakerGradient)"
+            d="M 30 88 L 30 98 Q 30 104 36 104 L 48 104 Q 52 104 52 98 L 52 92 Q 52 88 46 88 L 34 88 Q 30 88 30 92 Z"
+            fill="#FF4D4D"
+            stroke="#000000"
+            strokeWidth="2.5"
           />
-          <Path d="M 37 95 L 45 95" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          <Path d="M 37 98 L 45 98" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Sneaker sole */}
+          <Rect x={30} y={102} width={22} height={4} rx={2} fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
+          {/* Sneaker detail */}
+          <Path d="M 33 96 L 42 96" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
         </G>
-        
+
         {/* Right sneaker */}
         <G>
           <Path
-            d="M 48 92 L 48 96 Q 48 100 52 100 L 61 100 Q 65 100 65 96 L 65 88 L 48 92 Z"
-            fill="url(#sneakerGradient)"
+            d="M 48 92 L 48 98 Q 48 104 54 104 L 66 104 Q 70 104 70 98 L 70 88 Q 70 88 64 88 L 52 88 Q 48 88 48 92 Z"
+            fill="#FF4D4D"
+            stroke="#000000"
+            strokeWidth="2.5"
           />
-          <Path d="M 55 95 L 63 95" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          <Path d="M 55 98 L 63 98" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Sneaker sole */}
+          <Rect x={48} y={102} width={22} height={4} rx={2} fill="#FFFFFF" stroke="#000000" strokeWidth="1.5" />
+          {/* Sneaker detail */}
+          <Path d="M 58 96 L 67 96" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
         </G>
 
-        {/* Sparkles for excited expressions */}
-        {(expression === 'excited' || expression === 'celebrating' || expression === 'cheering') && (
-          <>
-            <Path d="M 12 35 L 14 40 L 12 45 L 10 40 Z" fill="#FFD93D" />
-            <Path d="M 88 35 L 90 40 L 88 45 L 86 40 Z" fill="#FFD93D" />
-            <Circle cx={8} cy={55} r={2} fill="#FFD93D" />
-            <Circle cx={92} cy={55} r={2} fill="#FFD93D" />
-          </>
-        )}
-
-        {/* Small lightning bolt emblem on belly */}
-        <Path
-          d="M 50 58 L 52 62 L 50 62 L 53 68 L 47 64 L 50 64 L 47 58 Z"
-          fill="url(#boltGradient)"
-          stroke="#E6B800"
-          strokeWidth="0.5"
-        />
       </Svg>
     </AnimatedView>
   );
