@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   addBillText: {
     ...TYPOGRAPHY.bodySmall,
-    color: COLORS.primaryGreen,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   sortContainer: {
