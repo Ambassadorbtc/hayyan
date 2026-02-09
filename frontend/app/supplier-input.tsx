@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -57,7 +57,7 @@ export default function SupplierInputScreen() {
   const [gasBill, setGasBill] = useState(monthlyGasBill ? monthlyGasBill.toString() : '');
   const [showCharacter, setShowCharacter] = useState(false);
 
-  // Character animation
+  // Character animation - breathing only in-app, not during signup
   const characterTranslateX = useSharedValue(width + 100);
   const characterScale = useSharedValue(1);
 
@@ -69,6 +69,7 @@ export default function SupplierInputScreen() {
       easing: Easing.out(Easing.cubic) 
     });
 
+    // Breathing animation after character arrives
     setTimeout(() => {
       characterScale.value = withRepeat(
         withSequence(
@@ -222,26 +223,15 @@ export default function SupplierInputScreen() {
               <Text style={styles.inputLabel}>Monthly Bill (£)</Text>
               <View style={styles.billInput}>
                 <Ionicons name="card" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.currencySymbol}>£</Text>
-                  <View style={styles.textInputContainer}>
-                    <input
-                      type="number"
-                      value={electricBill}
-                      onChange={(e) => setElectricBill(e.target.value)}
-                      placeholder="0"
-                      style={{
-                        border: 'none',
-                        outline: 'none',
-                        background: 'transparent',
-                        fontSize: 16,
-                        color: '#1A1A2E',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  </View>
-                </View>
+                <Text style={styles.currencySymbol}>£</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={electricBill}
+                  onChangeText={setElectricBill}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textMuted}
+                  keyboardType="numeric"
+                />
               </View>
               <Text style={styles.inputHelper}>Your average monthly electricity cost</Text>
             </View>
@@ -308,26 +298,15 @@ export default function SupplierInputScreen() {
               <Text style={styles.inputLabel}>Monthly Bill (£)</Text>
               <View style={styles.billInput}>
                 <Ionicons name="card" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.currencySymbol}>£</Text>
-                  <View style={styles.textInputContainer}>
-                    <input
-                      type="number"
-                      value={gasBill}
-                      onChange={(e) => setGasBill(e.target.value)}
-                      placeholder="0"
-                      style={{
-                        border: 'none',
-                        outline: 'none',
-                        background: 'transparent',
-                        fontSize: 16,
-                        color: '#1A1A2E',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  </View>
-                </View>
+                <Text style={styles.currencySymbol}>£</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={gasBill}
+                  onChangeText={setGasBill}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textMuted}
+                  keyboardType="numeric"
+                />
               </View>
               <Text style={styles.inputHelper}>Your average monthly gas cost</Text>
             </View>
@@ -501,20 +480,17 @@ const styles = StyleSheet.create({
   inputIcon: {
     marginRight: SPACING.sm,
   },
-  inputWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   currencySymbol: {
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
     marginRight: 4,
   },
-  textInputContainer: {
+  textInput: {
     flex: 1,
-    height: 40,
-    justifyContent: 'center',
+    ...TYPOGRAPHY.body,
+    color: COLORS.textPrimary,
+    height: 44,
+    paddingVertical: 0,
   },
   inputHelper: {
     ...TYPOGRAPHY.caption,
