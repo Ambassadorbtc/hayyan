@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platf
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../../src/constants/colors';
-import { WebHeader } from '../../src/components/web/WebHeader';
-import { WebFooter } from '../../src/components/web/WebFooter';
-import { AppStoreButtons } from '../../src/components/web/AppStoreButtons';
+import { COLORS } from '../../../src/constants/colors';
+import { WebHeader } from '../../../src/components/web/WebHeader';
+import { WebFooter } from '../../../src/components/web/WebFooter';
+import { AppStoreButtons } from '../../../src/components/web/AppStoreButtons';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
