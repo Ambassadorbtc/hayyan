@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
   FadeInUp,
   FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -16,6 +22,8 @@ import { AnimatedButton } from '../../src/components/ui/AnimatedButton';
 import { AnimatedInput } from '../../src/components/ui/AnimatedInput';
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 export default function PersonalDetailsScreen() {
   const router = useRouter();
@@ -28,6 +36,38 @@ export default function PersonalDetailsScreen() {
   } = useOnboardingStore();
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleContinue = () => {
     const newErrors: Record<string, string> = {};
@@ -56,7 +96,7 @@ export default function PersonalDetailsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -85,16 +125,18 @@ export default function PersonalDetailsScreen() {
             <Text style={styles.subheadline}>Personal details for your profile</Text>
           </Animated.View>
 
-          {/* Enezi Section */}
-          <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
+          {/* Character Section */}
+          <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
             <SpeechBubble
               message="Almost there! Personal touch for your profile! 🌟"
               position="bottom"
               delay={400}
             />
-            <View style={styles.eneziContainer}>
-              <Enezi size={120} expression="excited" animated />
-            </View>
+            {showCharacter && (
+              <Animated.View style={[styles.characterContainer, characterStyle]}>
+                <Enezi size={120} expression="excited" animated={false} />
+              </Animated.View>
+            )}
           </Animated.View>
 
           {/* Input Fields */}
@@ -134,7 +176,7 @@ export default function PersonalDetailsScreen() {
 
           {/* Privacy note */}
           <Animated.View entering={FadeInUp.delay(600).duration(400)} style={styles.privacyNote}>
-            <Ionicons name="shield-checkmark" size={20} color={COLORS.primaryGreen} />
+            <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
             <Text style={styles.privacyText}>
               Your data is safe with us. We never share your details with third parties.
             </Text>
@@ -210,11 +252,11 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.lg,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.md,
   },
   inputsContainer: {
@@ -223,7 +265,7 @@ const styles = StyleSheet.create({
   privacyNote: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     marginTop: SPACING.lg,
@@ -252,7 +294,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });

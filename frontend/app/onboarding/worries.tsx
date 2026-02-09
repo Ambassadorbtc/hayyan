@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
   FadeInUp,
   FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -18,6 +24,8 @@ import { SuccessOverlay } from '../../src/components/ui/SuccessOverlay';
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { Ionicons } from '@expo/vector-icons';
 
+const { width } = Dimensions.get('window');
+
 const WORRY_OPTIONS = [
   { id: 'energy', title: 'Energy bills (highest)', icon: 'flash' as const },
   { id: 'cashflow', title: 'Cashflow', icon: 'wallet' as const },
@@ -29,6 +37,41 @@ export default function WorriesScreen() {
   const router = useRouter();
   const { worries, setWorries, setCurrentStep } = useOnboardingStore();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation - slide from right, then breathe
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    // Show character after delay
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    // Slide from right - slower
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    // Start breathing after arriving
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const toggleWorry = (id: string) => {
     if (worries.includes(id)) {
@@ -63,7 +106,7 @@ export default function WorriesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -87,16 +130,18 @@ export default function WorriesScreen() {
           <Text style={styles.subheadline}>Select all that apply</Text>
         </Animated.View>
 
-        {/* Enezi Section */}
-        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
+        {/* Character Section */}
+        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
           <SpeechBubble
-            message="Tell me what's hurting most – I'm here to help 💚"
+            message="Tell me what's hurting most – I'm here to help 💜"
             position="bottom"
             delay={400}
           />
-          <View style={styles.eneziContainer}>
-            <Enezi size={120} expression={getEneziExpression()} animated />
-          </View>
+          {showCharacter && (
+            <Animated.View style={[styles.characterContainer, characterStyle]}>
+              <Enezi size={120} expression={getEneziExpression()} animated={false} />
+            </Animated.View>
+          )}
         </Animated.View>
 
         {/* Options */}
@@ -193,11 +238,11 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.lg,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.md,
   },
   optionsContainer: {
@@ -221,7 +266,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });

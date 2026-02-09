@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
   FadeInUp,
   FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -18,6 +24,8 @@ import { SelectableCard } from '../../src/components/ui/SelectableCard';
 import { SuccessOverlay } from '../../src/components/ui/SuccessOverlay';
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 export default function BusinessDetailsScreen() {
   const router = useRouter();
@@ -32,6 +40,38 @@ export default function BusinessDetailsScreen() {
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleContinue = () => {
     const newErrors: Record<string, string> = {};
@@ -66,7 +106,7 @@ export default function BusinessDetailsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -94,16 +134,18 @@ export default function BusinessDetailsScreen() {
             <Text style={styles.headline}>Tell us a bit about your business</Text>
           </Animated.View>
 
-          {/* Enezi Section */}
-          <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
+          {/* Character Section */}
+          <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
             <SpeechBubble
               message="Quick details to get accurate quotes! 📝"
               position="bottom"
               delay={400}
             />
-            <View style={styles.eneziContainer}>
-              <Enezi size={100} expression="happy" animated />
-            </View>
+            {showCharacter && (
+              <Animated.View style={[styles.characterContainer, characterStyle]}>
+                <Enezi size={100} expression="happy" animated={false} />
+              </Animated.View>
+            )}
           </Animated.View>
 
           {/* Business Structure */}
@@ -237,11 +279,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.md,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.sm,
   },
   sectionLabel: {
@@ -279,7 +321,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });

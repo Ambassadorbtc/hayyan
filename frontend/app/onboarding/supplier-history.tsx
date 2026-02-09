@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
   FadeInUp,
   FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -17,6 +23,8 @@ import { SelectableCard } from '../../src/components/ui/SelectableCard';
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { Ionicons } from '@expo/vector-icons';
 
+const { width } = Dimensions.get('window');
+
 const HISTORY_OPTIONS = [
   { id: 'less_1_year', title: 'Less than 1 year ago', icon: 'time' as const },
   { id: '1_2_years', title: '1-2 years ago', icon: 'calendar' as const },
@@ -27,6 +35,38 @@ const HISTORY_OPTIONS = [
 export default function SupplierHistoryScreen() {
   const router = useRouter();
   const { lastSupplierChange, setLastSupplierChange, setCurrentStep } = useOnboardingStore();
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation - slide from right, then breathe
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleSelect = (id: string) => {
     setLastSupplierChange(id);
@@ -54,7 +94,7 @@ export default function SupplierHistoryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.backgroundLight, '#F0FAF7', COLORS.background]}
+        colors={[COLORS.backgroundLight, '#E8E0FF', COLORS.background]}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -77,20 +117,22 @@ export default function SupplierHistoryScreen() {
           <Text style={styles.headline}>When was the last time you changed your energy supplier?</Text>
         </Animated.View>
 
-        {/* Enezi Section */}
-        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
+        {/* Character Section */}
+        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
           <SpeechBubble
             message={getEneziMessage()}
             position="bottom"
             delay={400}
           />
-          <View style={styles.eneziContainer}>
-            <Enezi 
-              size={120} 
-              expression={lastSupplierChange === 'never' ? 'surprised' : 'happy'} 
-              animated 
-            />
-          </View>
+          {showCharacter && (
+            <Animated.View style={[styles.characterContainer, characterStyle]}>
+              <Enezi 
+                size={120} 
+                expression={lastSupplierChange === 'never' ? 'surprised' : 'happy'} 
+                animated={false}
+              />
+            </Animated.View>
+          )}
         </Animated.View>
 
         {/* Timeline visual */}
@@ -173,11 +215,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.lg,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.md,
   },
   timelineContainer: {
@@ -210,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBorder,
   },
   progressDotActive: {
-    backgroundColor: COLORS.primaryGreen,
+    backgroundColor: COLORS.primary,
     width: 24,
   },
 });
