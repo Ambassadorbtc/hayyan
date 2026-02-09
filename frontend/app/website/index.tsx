@@ -347,10 +347,14 @@ export default function WebsiteHomePage() {
         />
         
         <View style={styles.howWeHelpContent}>
-          {/* Hayyan Character - Slides from left, pulses */}
+          {/* Hayyan Character - Slides from left, pulses - ACTUAL IMAGE */}
           <Animated.View style={[styles.hayyanContainer, hayyanAnimatedStyle]}>
             <View style={styles.hayyanCircle}>
-              <Text style={styles.hayyanEmoji}>👋</Text>
+              <Image 
+                source={require('../../assets/images/character.png')}
+                style={styles.hayyanImage}
+                resizeMode="contain"
+              />
             </View>
             <View style={styles.hayyanSpeechBubble}>
               <Text style={styles.hayyanSpeech}>Hey! I'm Hayyan. Let me help you save money! ⚡</Text>
