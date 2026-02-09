@@ -37,6 +37,7 @@ export default function RootLayout() {
         <Stack.Screen name="supplier-input" options={{ animation: 'slide_from_right', presentation: 'modal' }} />
         <Stack.Screen name="supplier-comparison" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="offer-details" options={{ animation: 'slide_from_right', presentation: 'modal' }} />
+        <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </GestureHandlerRootView>
   );
