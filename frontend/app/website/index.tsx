@@ -631,7 +631,7 @@ export default function WebsiteHomePage() {
           </Animated.Text>
           
           <Animated.View 
-            entering={BounceInUp.delay(500).duration(600)}
+            entering={BounceInDown.delay(500).duration(600)}
             style={ctaStyle}
           >
             <TouchableOpacity 
