@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,8 @@ import Animated, {
   withSpring,
   withSequence,
   withTiming,
+  withRepeat,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS } from '../../src/constants/colors';
@@ -72,6 +74,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ item, selected, onPress, in
   return (
     <Animated.View
       entering={FadeInUp.delay(400 + index * 50).duration(400)}
+      style={styles.cardWrapper}
     >
       <AnimatedTouchable
         onPress={onPress}
@@ -92,7 +95,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ item, selected, onPress, in
             color={selected ? COLORS.textLight : item.color}
           />
         </View>
-        <Text style={[styles.cardTitle, selected && styles.cardTitleSelected]}>
+        <Text style={[styles.cardTitle, selected && styles.cardTitleSelected]} numberOfLines={2}>
           {item.title}
         </Text>
       </AnimatedTouchable>
@@ -104,6 +107,38 @@ export default function BusinessTypeScreen() {
   const router = useRouter();
   const { businessType, setBusinessType, setCurrentStep } = useOnboardingStore();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCharacter, setShowCharacter] = useState(false);
+
+  // Character animation
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
+
+  useEffect(() => {
+    setTimeout(() => setShowCharacter(true), 400);
+    
+    characterTranslateX.value = withTiming(0, { 
+      duration: 1200, 
+      easing: Easing.out(Easing.cubic) 
+    });
+
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 1600);
+  }, []);
+
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
+  }));
 
   const handleSelect = (id: string) => {
     setBusinessType(id);
@@ -156,20 +191,22 @@ export default function BusinessTypeScreen() {
           <Text style={styles.headline}>What type of business do you run?</Text>
         </Animated.View>
 
-        {/* Enezi Section */}
-        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.eneziSection}>
+        {/* Character Section */}
+        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.characterSection}>
           <SpeechBubble
             message={businessType ? `Ace! I'll tailor savings for ${getSelectedBusinessName()}! 🎯` : "Pick your business type and I'll customize your savings! 💼"}
             position="bottom"
             delay={400}
           />
-          <View style={styles.eneziContainer}>
-            <Enezi
-              size={100}
-              expression={businessType ? 'pointing' : 'happy'}
-              animated
-            />
-          </View>
+          {showCharacter && (
+            <Animated.View style={[styles.characterContainer, characterStyle]}>
+              <Enezi
+                size={100}
+                expression={businessType ? 'pointing' : 'happy'}
+                animated={false}
+              />
+            </Animated.View>
+          )}
         </Animated.View>
 
         {/* Business Type Grid */}
@@ -256,11 +293,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
-  eneziSection: {
+  characterSection: {
     alignItems: 'center',
     marginVertical: SPACING.md,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.sm,
   },
   gridContainer: {
@@ -269,12 +306,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: SPACING.md,
   },
+  cardWrapper: {
+    width: '31%',
+    marginBottom: SPACING.md,
+  },
   businessCard: {
-    width: CARD_SIZE,
-    height: CARD_SIZE + 20,
+    width: '100%',
+    aspectRatio: 0.85,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.sm,
-    marginBottom: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -297,6 +337,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     textAlign: 'center',
     fontWeight: '600',
+    fontSize: 11,
   },
   cardTitleSelected: {
     color: COLORS.textLight,
