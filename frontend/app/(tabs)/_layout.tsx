@@ -40,7 +40,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: COLORS.primaryGreen,
+        tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: styles.tabLabel,
         tabBarHideOnKeyboard: true,
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconContainerActive: {
-    backgroundColor: '#E8F8F3',
+    backgroundColor: '#F0EBFF',
   },
 });
