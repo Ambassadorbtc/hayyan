@@ -81,7 +81,7 @@ export default function WelcomeScreen() {
   }));
 
   const eneziStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: eneziTranslateX.value }],
+    transform: [{ translateX: characterTranslateX.value }],
   }));
 
   const thunderStyle = useAnimatedStyle(() => ({
