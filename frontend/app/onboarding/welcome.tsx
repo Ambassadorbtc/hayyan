@@ -29,7 +29,8 @@ export default function WelcomeScreen() {
   // Animation values
   const backgroundShift = useSharedValue(0);
   const contentOpacity = useSharedValue(0);
-  const eneziTranslateX = useSharedValue(-width);
+  // Character slides from RIGHT to CENTER
+  const characterTranslateX = useSharedValue(width + 100);
   const thunderOpacity = useSharedValue(0);
 
   useEffect(() => {
@@ -42,13 +43,10 @@ export default function WelcomeScreen() {
     // Content fade in
     contentOpacity.value = withDelay(300, withTiming(1, { duration: 500 }));
 
-    // Enezi entrance
-    eneziTranslateX.value = withDelay(
+    // Character slides from RIGHT to CENTER
+    characterTranslateX.value = withDelay(
       600,
-      withSequence(
-        withSpring(20, { damping: 8, stiffness: 100 }),
-        withSpring(0, { damping: 12, stiffness: 150 })
-      )
+      withSpring(0, { damping: 15, stiffness: 80, mass: 1 })
     );
 
     // Thunder effect
