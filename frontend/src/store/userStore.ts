@@ -29,18 +29,25 @@ export const useUserStore = create<UserState>((set) => ({
   
   setUser: (user) => {
     set({ user, isAuthenticated: true, isLoading: false });
-    AsyncStorage.setItem('enerzo_user', JSON.stringify(user));
+    AsyncStorage.setItem('hayyan_user', JSON.stringify(user));
   },
   
-  logout: () => {
-    set({ user: null, isAuthenticated: false, isLoading: false });
-    AsyncStorage.removeItem('enerzo_user');
-    AsyncStorage.removeItem('enerzo_onboarding');
+  logout: async () => {
+    try {
+      // Clear all user data
+      await AsyncStorage.removeItem('hayyan_user');
+      await AsyncStorage.removeItem('hayyan_onboarding');
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Still clear state even if AsyncStorage fails
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
   },
   
   loadUser: async () => {
     try {
-      const data = await AsyncStorage.getItem('enerzo_user');
+      const data = await AsyncStorage.getItem('hayyan_user');
       if (data) {
         const user = JSON.parse(data);
         set({ user, isAuthenticated: true, isLoading: false });
