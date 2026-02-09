@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   withSequence,
   withDelay,
+  withRepeat,
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
@@ -102,13 +103,14 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
   const overlayOpacity = useSharedValue(0);
   const contentScale = useSharedValue(0.5);
-  const eneziTranslateY = useSharedValue(100);
+  const characterTranslateX = useSharedValue(width + 100);
+  const characterScale = useSharedValue(1);
   const checkmarkScale = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      // Generate confetti
-      const colors = [COLORS.primaryGreen, COLORS.accentCoral, COLORS.electricBlue, COLORS.highlightYellow, '#FF69B4', '#9B59B6'];
+      // Generate confetti with PURPLE theme colors
+      const colors = ['#7B5CF6', '#9D85F6', '#B8A4F8', '#FFD93D', '#FF69B4', '#00D4AA'];
       const pieces: ConfettiPiece[] = [];
       for (let i = 0; i < 50; i++) {
         pieces.push({
@@ -125,7 +127,25 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
       // Animate in
       overlayOpacity.value = withTiming(1, { duration: 300 });
       contentScale.value = withSpring(1, { damping: 12, stiffness: 200 });
-      eneziTranslateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      
+      // Character slides from right
+      characterTranslateX.value = withDelay(
+        300,
+        withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) })
+      );
+      
+      // Character breathing animation after arriving
+      setTimeout(() => {
+        characterScale.value = withRepeat(
+          withSequence(
+            withTiming(1.05, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+          ),
+          -1,
+          true
+        );
+      }, 1100);
+      
       checkmarkScale.value = withDelay(
         400,
         withSpring(1, { damping: 10, stiffness: 300 })
@@ -147,7 +167,7 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
       }
     });
     contentScale.value = withTiming(0.5, { duration: 300 });
-    eneziTranslateY.value = withTiming(100, { duration: 300 });
+    characterTranslateX.value = withTiming(width + 100, { duration: 300 });
   };
 
   const overlayStyle = useAnimatedStyle(() => ({
@@ -158,8 +178,11 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
     transform: [{ scale: contentScale.value }],
   }));
 
-  const eneziStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: eneziTranslateY.value }],
+  const characterStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
   }));
 
   const checkmarkStyle = useAnimatedStyle(() => ({
@@ -189,9 +212,9 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
 
-          {/* Enezi mascot */}
-          <Animated.View style={[styles.eneziContainer, eneziStyle]}>
-            <Enezi size={120} expression={eneziExpression} animated />
+          {/* Character - slides from right, then breathes */}
+          <Animated.View style={[styles.characterContainer, characterStyle]}>
+            <Enezi size={140} expression={eneziExpression} animated={false} />
           </Animated.View>
         </Animated.View>
       </Animated.View>
@@ -202,7 +225,7 @@ export const SuccessOverlay: React.FC<SuccessOverlayProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 166, 118, 0.95)',
+    backgroundColor: 'rgba(123, 92, 246, 0.95)', // Purple overlay
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -242,7 +265,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.9,
   },
-  eneziContainer: {
+  characterContainer: {
     marginTop: SPACING.xl,
   },
 });
