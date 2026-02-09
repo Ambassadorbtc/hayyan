@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue,
@@ -8,12 +8,12 @@ import Animated, {
   withDelay,
   withSequence,
   withSpring,
+  withRepeat,
   Easing,
-  runOnJS,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../src/constants/colors';
-import { TYPOGRAPHY, SPACING } from '../src/constants/typography';
+import { TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../src/constants/typography';
 import { Enezi } from '../src/components/mascot/Enezi';
 import { useUserStore } from '../src/store/userStore';
 import { useOnboardingStore } from '../src/store/onboardingStore';
@@ -22,9 +22,10 @@ const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useUserStore();
+  const { isAuthenticated } = useUserStore();
   const { isCompleted } = useOnboardingStore();
   const [showCharacter, setShowCharacter] = useState(false);
+  const [showButton, setShowButton] = useState(false);
 
   // Animation values
   const logoOpacity = useSharedValue(0);
@@ -34,12 +35,16 @@ export default function SplashScreen() {
   const titleOpacity = useSharedValue(0);
   const subtitleOpacity = useSharedValue(0);
   const sparkleOpacity = useSharedValue(0);
+  const buttonOpacity = useSharedValue(0);
+  const buttonTranslateY = useSharedValue(30);
   
-  // Character slides from RIGHT to CENTER
-  const characterTranslateX = useSharedValue(width + 100);
+  // Character slides from RIGHT to CENTER - SLOWER
+  const characterTranslateX = useSharedValue(width + 150);
   const characterOpacity = useSharedValue(0);
+  // Zoom in/out once centered
+  const characterScale = useSharedValue(1);
 
-  const navigateToNext = () => {
+  const handleGetStarted = () => {
     if (isAuthenticated && isCompleted) {
       router.replace('/(tabs)');
     } else {
@@ -72,13 +77,26 @@ export default function SplashScreen() {
     titleOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
     subtitleOpacity.value = withDelay(900, withTiming(1, { duration: 400 }));
 
-    // Show character sliding from RIGHT
+    // Show character sliding from RIGHT - SLOWER
     setTimeout(() => setShowCharacter(true), 1000);
-    characterOpacity.value = withDelay(1000, withTiming(1, { duration: 300 }));
+    characterOpacity.value = withDelay(1000, withTiming(1, { duration: 400 }));
+    // Slower slide in - lower stiffness, higher mass
     characterTranslateX.value = withDelay(
       1000, 
-      withSpring(0, { damping: 15, stiffness: 80, mass: 1 })
+      withSpring(0, { damping: 20, stiffness: 40, mass: 1.5 })
     );
+
+    // Start zoom in/out breathing effect after character arrives (around 2.5s)
+    setTimeout(() => {
+      characterScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, 2500);
 
     // Sparkle effects
     sparkleOpacity.value = withDelay(
@@ -90,15 +108,12 @@ export default function SplashScreen() {
       )
     );
 
-    // Navigate after splash
-    const timer = setTimeout(() => {
-      if (!isLoading) {
-        navigateToNext();
-      }
-    }, 3000);
+    // Show Get Started button
+    setTimeout(() => setShowButton(true), 2800);
+    buttonOpacity.value = withDelay(2800, withTiming(1, { duration: 500 }));
+    buttonTranslateY.value = withDelay(2800, withSpring(0, { damping: 12, stiffness: 150 }));
 
-    return () => clearTimeout(timer);
-  }, [isLoading, isAuthenticated, isCompleted]);
+  }, []);
 
   const logoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
@@ -117,14 +132,22 @@ export default function SplashScreen() {
     opacity: subtitleOpacity.value,
   }));
 
-  // Character slides from right to center
+  // Character slides from right to center, then zooms in/out
   const characterStyle = useAnimatedStyle(() => ({
     opacity: characterOpacity.value,
-    transform: [{ translateX: characterTranslateX.value }],
+    transform: [
+      { translateX: characterTranslateX.value },
+      { scale: characterScale.value },
+    ],
   }));
 
   const sparkleStyle = useAnimatedStyle(() => ({
     opacity: sparkleOpacity.value,
+  }));
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ translateY: buttonTranslateY.value }],
   }));
 
   return (
@@ -159,10 +182,24 @@ export default function SplashScreen() {
           <Text style={styles.subtitle}>Slash Your Energy Bills!</Text>
         </Animated.View>
 
-        {/* Character sliding from right */}
+        {/* Character sliding from right - 20% BIGGER */}
         {showCharacter && (
           <Animated.View style={[styles.characterContainer, characterStyle]}>
-            <Enezi size={180} expression="excited" animated={false} />
+            <Enezi size={216} expression="excited" animated={false} />
+          </Animated.View>
+        )}
+
+        {/* Get Started Button */}
+        {showButton && (
+          <Animated.View style={[styles.buttonContainer, buttonStyle]}>
+            <TouchableOpacity 
+              style={styles.getStartedButton} 
+              onPress={handleGetStarted}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.buttonText}>Get Started</Text>
+              <Text style={styles.buttonIcon}>→</Text>
+            </TouchableOpacity>
           </Animated.View>
         )}
       </View>
@@ -221,7 +258,38 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   characterContainer: {
-    marginTop: SPACING.xxl,
+    marginTop: SPACING.xl,
+  },
+  buttonContainer: {
+    marginTop: SPACING.xl,
+    width: '100%',
+    paddingHorizontal: SPACING.lg,
+  },
+  getStartedButton: {
+    backgroundColor: 'white',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  buttonText: {
+    ...TYPOGRAPHY.button,
+    color: '#7B5CF6',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  buttonIcon: {
+    fontSize: 20,
+    color: '#7B5CF6',
+    marginLeft: SPACING.sm,
+    fontWeight: '700',
   },
   footer: {
     paddingBottom: SPACING.xxl,
